@@ -40,7 +40,9 @@ create table if not exists caballos (
   criador text,
   propietario text,
   notas text,
-  puntuacion text,                     -- opcional: media/nota de los jueces
+  -- Puntuaciones: 5 criterios (T, CyC, C, E, M) x 2 jueces, igual que la hoja en papel
+  j1_t numeric(5,2), j1_cyc numeric(5,2), j1_c numeric(5,2), j1_e numeric(5,2), j1_m numeric(5,2),
+  j2_t numeric(5,2), j2_cyc numeric(5,2), j2_c numeric(5,2), j2_e numeric(5,2), j2_m numeric(5,2),
   posicion int                         -- clasificación final (la coloca el admin a mano)
 );
 

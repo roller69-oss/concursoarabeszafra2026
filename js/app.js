@@ -32,6 +32,35 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+const CRITERIOS = ['t', 'cyc', 'c', 'e', 'm'];
+const CRITERIOS_LABEL = { t: 'T', cyc: 'CyC', c: 'C', e: 'E', m: 'M' };
+
+function totalJuez(h, juez) {
+  const vals = CRITERIOS.map(c => h[`j${juez}_${c}`]);
+  if (vals.every(v => v === null || v === undefined || v === '')) return null;
+  return vals.reduce((sum, v) => sum + (Number(v) || 0), 0);
+}
+
+function totalFinal(h) {
+  const t1 = totalJuez(h, 1);
+  const t2 = totalJuez(h, 2);
+  if (t1 == null && t2 == null) return null;
+  if (t1 == null) return t2;
+  if (t2 == null) return t1;
+  return (t1 + t2) / 2;
+}
+
+function fmtNum(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  const num = Number(n);
+  return Number.isInteger(num) ? String(num) : num.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function ordinal(n) {
+  if (n === null || n === undefined) return '—';
+  return `${n}º`;
+}
+
 function setSaveStatus(el, msg, isError) {
   el.textContent = msg;
   el.style.color = isError ? '#e3a3a3' : '';
@@ -346,10 +375,14 @@ function paintClase(clase, caballos) {
   const admin = isAdmin();
   const salida = [...caballos].sort((a, b) => (a.dorsal ?? 999) - (b.dorsal ?? 999));
   const clasif = [...caballos].sort((a, b) => {
-    if (a.posicion == null && b.posicion == null) return (a.dorsal ?? 0) - (b.dorsal ?? 0);
-    if (a.posicion == null) return 1;
-    if (b.posicion == null) return -1;
-    return a.posicion - b.posicion;
+    if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
+    if (a.posicion != null) return -1;
+    if (b.posicion != null) return 1;
+    const ta = totalFinal(a), tb = totalFinal(b);
+    if (ta != null && tb != null) return tb - ta;
+    if (ta != null) return -1;
+    if (tb != null) return 1;
+    return (a.dorsal ?? 0) - (b.dorsal ?? 0);
   });
 
   app.innerHTML = `
@@ -426,6 +459,30 @@ function adminBar(clase) {
   `;
 }
 
+function scoreTable(h, admin) {
+  const fila = (juez) => CRITERIOS.map(c => {
+    const val = h[`j${juez}_${c}`];
+    return admin
+      ? `<td><input type="number" step="0.5" class="score-input" data-juez="${juez}" data-criterio="${c}" value="${val ?? ''}"></td>`
+      : `<td>${fmtNum(val)}</td>`;
+  }).join('');
+
+  return `
+    <div class="score-sheet">
+      <table class="mini-score-table">
+        <thead><tr>
+          <th>Puntos</th>${CRITERIOS.map(c => `<th>${CRITERIOS_LABEL[c]}</th>`).join('')}<th>Total</th>
+        </tr></thead>
+        <tbody>
+          <tr><th>Juez I</th>${fila(1)}<td class="total-juez" data-total-juez="1">${fmtNum(totalJuez(h, 1))}</td></tr>
+          <tr><th>Juez II</th>${fila(2)}<td class="total-juez" data-total-juez="2">${fmtNum(totalJuez(h, 2))}</td></tr>
+        </tbody>
+      </table>
+      <div class="total-final"><span>Total (media de los 2 jueces)</span><strong data-total-final>${fmtNum(totalFinal(h))}</strong></div>
+    </div>
+  `;
+}
+
 function tablaClasificacion(caballos, clase, admin) {
   if (!admin && !clase.clasificacion_publicada) {
     return `<div class="empty-state"><strong>Clasificación aún no publicada</strong>La organización la publicará en cuanto los jueces terminen de valorar esta clase.</div>`;
@@ -433,36 +490,33 @@ function tablaClasificacion(caballos, clase, admin) {
   if (!caballos.length) return `<div class="empty-state"><strong>Sin inscripciones todavía</strong></div>`;
 
   return `
-    <div class="table-wrap">
-      <table class="resultados">
-        <thead><tr>
-          <th>${admin ? 'Posición' : 'Pos.'}</th><th>Dorsal</th><th>Nombre</th>${admin ? '<th>Puntuación</th>' : '<th>Puntuación</th>'}<th>Criador / Propietario</th>
-        </tr></thead>
-        <tbody>
-          ${caballos.map((h, i) => `
-            <tr data-id="${h.id}">
-              <td class="pos-cell">
-                ${admin ? `
-                  <div class="pos-editor">
-                    <button class="btn-icon" data-move="up" ${i === 0 ? 'disabled' : ''} title="Subir puesto">↑</button>
-                    <input type="number" min="1" class="pos-input" value="${h.posicion ?? ''}" placeholder="—">
-                    <button class="btn-icon" data-move="down" ${i === caballos.length - 1 ? 'disabled' : ''} title="Bajar puesto">↓</button>
-                  </div>
-                ` : (h.posicion ?? '—')}
-              </td>
-              <td class="dorsal-cell">${h.dorsal ?? '—'}</td>
-              <td class="nombre-cell">${escapeHtml(h.nombre)}</td>
-              <td>${admin ? `<input class="puntuacion-input" value="${escapeHtml(h.puntuacion || '')}" placeholder="p. ej. 87,5">` : escapeHtml(h.puntuacion || '—')}</td>
-              <td>${escapeHtml(h.criador || h.propietario || '—')}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+    <div class="caballos-clasif">
+      ${caballos.map((h, i) => `
+        <div class="caballo-card" data-id="${h.id}">
+          <div class="caballo-card-head">
+            <div class="pos-block">
+              ${admin ? `
+                <button class="btn-icon" data-move="up" ${i === 0 ? 'disabled' : ''} title="Subir puesto">↑</button>
+                <span class="pos-num">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º*'}</span>
+                <button class="btn-icon" data-move="down" ${i === caballos.length - 1 ? 'disabled' : ''} title="Bajar puesto">↓</button>
+              ` : `<span class="pos-num pos-num-public">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º'}</span>`}
+            </div>
+            <div class="caballo-card-info">
+              <span class="dorsal-tag">Dorsal ${h.dorsal ?? '—'}</span>
+              <strong class="caballo-nombre">${escapeHtml(h.nombre)}</strong>
+              <span class="caballo-sub">${escapeHtml(h.criador || h.propietario || '')}</span>
+            </div>
+          </div>
+          ${scoreTable(h, admin)}
+        </div>
+      `).join('')}
     </div>
-    ${admin ? `<div style="margin-top:16px; display:flex; gap:12px; align-items:center;">
-      <button class="btn-primary" id="guardar-clasificacion">Guardar cambios</button>
-      <span class="save-status" id="guardar-status"></span>
-    </div>` : ''}
+    ${admin ? `
+      <p class="muted small">* Sin posición fijada todavía: se muestran ordenados por puntuación total. Usa ↑ ↓ para fijar el puesto real.</p>
+      <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
+        <button class="btn-primary" id="guardar-clasificacion">Guardar cambios</button>
+        <span class="save-status" id="guardar-status"></span>
+      </div>` : ''}
   `;
 }
 
@@ -480,8 +534,29 @@ function wireClasificacionAdmin(clase, caballos) {
     }
   });
 
-  // orden local en memoria para los botones subir/bajar
+  // orden local en memoria para los botones subir/bajar (no repinta todo, para no perder lo que se está escribiendo)
   let orden = [...caballos];
+
+  function leerNotasDeTarjeta(card) {
+    const h = {};
+    card.querySelectorAll('.score-input').forEach(inp => {
+      h[`j${inp.dataset.juez}_${inp.dataset.criterio}`] = inp.value === '' ? null : Number(inp.value);
+    });
+    return h;
+  }
+
+  function recalcularTarjeta(card) {
+    const notas = leerNotasDeTarjeta(card);
+    const t1 = totalJuez(notas, 1);
+    const t2 = totalJuez(notas, 2);
+    card.querySelector('[data-total-juez="1"]').textContent = fmtNum(t1);
+    card.querySelector('[data-total-juez="2"]').textContent = fmtNum(t2);
+    card.querySelector('[data-total-final]').textContent = fmtNum(totalFinal(notas));
+  }
+
+  document.querySelectorAll('.score-input').forEach(inp => {
+    inp.addEventListener('input', () => recalcularTarjeta(inp.closest('.caballo-card')));
+  });
 
   function repintar() {
     const panel = document.getElementById('tab-panel');
@@ -491,12 +566,14 @@ function wireClasificacionAdmin(clase, caballos) {
 
   document.querySelectorAll('[data-move]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const row = btn.closest('tr');
-      const idx = orden.findIndex(h => String(h.id) === row.dataset.id);
+      const card = btn.closest('.caballo-card');
+      const idx = orden.findIndex(h => String(h.id) === card.dataset.id);
       const dir = btn.dataset.move === 'up' ? -1 : 1;
       const swapIdx = idx + dir;
       if (swapIdx < 0 || swapIdx >= orden.length) return;
       [orden[idx], orden[swapIdx]] = [orden[swapIdx], orden[idx]];
+      // al mover manualmente, fijamos posiciones 1..n según el nuevo orden
+      orden.forEach((h, i) => { h.posicion = i + 1; });
       repintar();
     });
   });
@@ -506,17 +583,19 @@ function wireClasificacionAdmin(clase, caballos) {
   guardarBtn?.addEventListener('click', async () => {
     guardarBtn.disabled = true;
     try {
-      const rows = document.querySelectorAll('#tab-panel table.resultados tbody tr');
+      const cards = document.querySelectorAll('#tab-panel .caballo-card');
       const updates = [];
-      rows.forEach((row, i) => {
-        const id = row.dataset.id;
-        const posInput = row.querySelector('.pos-input');
-        const puntInput = row.querySelector('.puntuacion-input');
-        const posicion = posInput.value ? parseInt(posInput.value, 10) : (i + 1);
-        const puntuacion = puntInput.value.trim() || null;
-        updates.push({ id, posicion, puntuacion });
+      cards.forEach((card, i) => {
+        const id = card.dataset.id;
+        const notas = leerNotasDeTarjeta(card);
+        const caballoOriginal = orden.find(h => String(h.id) === id);
+        const posicion = caballoOriginal.posicion ?? null;
+        updates.push({ id, posicion, ...notas });
       });
-      await Promise.all(updates.map(u => guardarCaballo(u.id, { posicion: u.posicion, puntuacion: u.puntuacion })));
+      await Promise.all(updates.map(u => {
+        const { id, ...cambios } = u;
+        return guardarCaballo(id, cambios);
+      }));
       setSaveStatus(guardarStatus, 'Clasificación guardada ✓', false);
     } catch (err) {
       console.error(err);

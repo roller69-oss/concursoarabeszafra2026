@@ -264,14 +264,55 @@ table.resultados tbody tr:hover{background:rgba(192,136,41,0.06);}
 .nombre-cell{font-weight:600;}
 .nombre-cell .detalle{display:block; font-weight:400; font-size:0.8rem; color:rgba(34,31,26,0.55);}
 
-.pos-editor{display:flex; align-items:center; gap:6px;}
-.pos-editor input[type="number"]{
-  width:52px; font-family:var(--f-mono); text-align:center; padding:6px 4px;
-  border:1px solid var(--linea); border-radius:6px; font-size:0.9rem;
+/* ------- Tarjetas de clasificación (una por caballo) ------- */
+.caballos-clasif{display:flex; flex-direction:column; gap:14px;}
+.caballo-card{
+  background:var(--marfil-alta); border:1px solid var(--linea); border-radius:14px; padding:16px 18px;
 }
-.puntuacion-input{
-  width:90px; font-family:var(--f-mono); padding:6px 8px; border:1px solid var(--linea); border-radius:6px; font-size:0.88rem;
+.caballo-card-head{
+  display:flex; align-items:center; gap:14px; margin-bottom:12px; flex-wrap:wrap;
 }
+.pos-block{display:flex; align-items:center; gap:8px; min-width:96px;}
+.pos-num{
+  font-family:var(--f-display); font-weight:600; font-size:1.15rem; color:var(--verde-900);
+  min-width:34px; text-align:center;
+}
+.pos-num-public{
+  background:var(--verde-900); color:var(--marfil-alta); border-radius:999px; padding:4px 10px; font-size:1rem;
+}
+.caballo-card-info{display:flex; flex-direction:column; gap:1px;}
+.dorsal-tag{font-family:var(--f-mono); font-size:0.72rem; color:rgba(34,31,26,0.55); text-transform:uppercase; letter-spacing:0.04em;}
+.caballo-nombre{font-family:var(--f-body); font-size:1.02rem; font-weight:700;}
+.caballo-sub{font-size:0.82rem; color:rgba(34,31,26,0.55);}
+
+.score-sheet{overflow-x:auto;}
+table.mini-score-table{
+  width:100%; min-width:400px; border-collapse:collapse; font-size:0.84rem; background:var(--marfil);
+  border:1px solid var(--linea); border-radius:8px; overflow:hidden;
+}
+table.mini-score-table th, table.mini-score-table td{
+  padding:7px 6px; text-align:center; border-bottom:1px solid var(--linea); border-right:1px solid var(--linea);
+}
+table.mini-score-table th:last-child, table.mini-score-table td:last-child{border-right:none;}
+table.mini-score-table thead th{
+  font-family:var(--f-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em;
+  color:rgba(34,31,26,0.55); background:var(--marfil-alta);
+}
+table.mini-score-table tbody th{
+  font-family:var(--f-mono); font-size:0.72rem; text-align:left; padding-left:10px; white-space:nowrap;
+  color:var(--verde-900); background:var(--marfil-alta);
+}
+table.mini-score-table tbody tr:last-child td, table.mini-score-table tbody tr:last-child th{border-bottom:none;}
+.score-input{
+  width:40px; font-family:var(--f-mono); text-align:center; padding:5px 2px;
+  border:1px solid var(--linea); border-radius:5px; font-size:0.86rem;
+}
+.total-juez{font-family:var(--f-mono); font-weight:700; color:var(--granate);}
+.total-final{
+  display:flex; justify-content:space-between; align-items:center; margin-top:8px;
+  font-size:0.86rem; color:rgba(34,31,26,0.7);
+}
+.total-final strong{font-family:var(--f-mono); font-size:1.05rem; color:var(--verde-900);}
 
 .empty-state{
   padding:56px 24px; text-align:center; border:1px dashed var(--linea); border-radius:14px;

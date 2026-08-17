@@ -65,11 +65,14 @@ edición real.
   organización.
 - **Cada clase** tiene dos pestañas:
   - **Orden de salida**: fijo, viene del Excel (número de dorsal).
-  - **Clasificación**: la rellenas tú a mano según lo que digan los jueces.
-    No hay fórmula automática — usas las flechas ↑ ↓ para colocar cada
-    caballo en su puesto (así los empates o casos especiales los decides
-    tú), y opcionalmente anotas la puntuación de los jueces en la casilla
-    de al lado.
+  - **Clasificación**: cada caballo tiene una hoja igual que la de papel,
+    con las 5 notas de cada juez (T, CyC, C, E, M). La web suma
+    automáticamente el total de cada juez, y calcula el total final como
+    la media de los dos. El **puesto (1º, 2º, 3º...) lo decides tú a mano**
+    con las flechas ↑ ↓ — no hay fórmula automática para el orden, así que
+    los empates o casos especiales los resuelves tú. Mientras no fijes un
+    puesto, se muestran ordenados por puntuación total como referencia
+    (marcados con un asterisco).
   - Cada clase tiene un interruptor **"Publicar esta clasificación"** — así
     puedes ir rellenando resultados sin que se vean hasta que estén
     confirmados, y publicarlos con un clic cuando termine la clase.
@@ -98,7 +101,15 @@ js/data-demo.js       datos de ejemplo para el modo demostración
 js/app.js             toda la lógica de la web
 sql/schema.sql        tablas y permisos de Supabase
 sql/seed.sql           tus 16 clases y 53 caballos ya listos para importar
+sql/migracion_puntuaciones.sql   solo si ya habías creado la base de datos antes
 ```
+
+> Si ya habías ejecutado `schema.sql` en Supabase antes de tener las
+> puntuaciones de los jueces, ejecuta también
+> `sql/migracion_puntuaciones.sql` (SQL Editor → New query → pegar → Run)
+> para añadir esos campos sin perder los datos que ya tengas cargados.
+> Si es tu primera vez instalando todo, no hace falta: ya viene incluido
+> en `schema.sql`.
 
 ## Cambios futuros en los caballos inscritos
 
