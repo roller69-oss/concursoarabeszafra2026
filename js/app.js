@@ -111,6 +111,55 @@ async function fetchClase(codigo) {
   return { clase, caballos };
 }
 
+async function fetchTodosCaballos() {
+  if (DEMO_MODE) {
+    const out = [];
+    window.DEMO_CLASES.forEach(c => {
+      c.caballos.forEach(h => out.push({ ...h, clase_codigo: c.codigo, clase_titulo: c.titulo }));
+    });
+    return out;
+  }
+  const { data, error } = await supa
+    .from('caballos')
+    .select('id, nombre, dorsal, posicion, clases(codigo, titulo)')
+    .order('nombre', { ascending: true });
+  if (error) throw error;
+  return data.map(r => ({ id: r.id, nombre: r.nombre, dorsal: r.dorsal, posicion: r.posicion, clase_codigo: r.clases?.codigo, clase_titulo: r.clases?.titulo }));
+}
+
+async function fetchCampeonatos() {
+  if (DEMO_MODE) return window.DEMO_CAMPEONATOS;
+  const { data, error } = await supa.from('campeonatos').select('*').order('orden', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+async function fetchCampeonato(codigo) {
+  if (DEMO_MODE) return window.DEMO_CAMPEONATOS.find(c => c.codigo === codigo) || null;
+  const { data, error } = await supa.from('campeonatos').select('*').eq('codigo', codigo).single();
+  if (error) throw error;
+  return data;
+}
+
+async function guardarCampeonato(id, cambios) {
+  if (DEMO_MODE) return;
+  const { error } = await supa.from('campeonatos').update(cambios).eq('id', id);
+  if (error) throw error;
+}
+
+async function fetchTrofeos() {
+  if (DEMO_MODE) return window.DEMO_TROFEOS;
+  const { data, error } = await supa.from('trofeos').select('*').order('orden', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+async function guardarTrofeo(id, cambios) {
+  if (DEMO_MODE) return;
+  const { error } = await supa.from('trofeos').update(cambios).eq('id', id);
+  if (error) throw error;
+}
+
 async function guardarCaballo(id, cambios) {
   if (DEMO_MODE) return; // modo demo: solo lectura
   const { error } = await supa.from('caballos').update(cambios).eq('id', id);
@@ -204,6 +253,7 @@ function currentRoute() {
   if (!hash) return { name: 'home' };
   const [seg, param] = hash.split('/');
   if (seg === 'clase' && param) return { name: 'clase', codigo: decodeURIComponent(param) };
+  if (seg === 'campeonato' && param) return { name: 'campeonato', codigo: decodeURIComponent(param) };
   return { name: 'home' };
 }
 
@@ -212,6 +262,8 @@ async function render() {
   try {
     if (route.name === 'clase') {
       await renderClase(route.codigo);
+    } else if (route.name === 'campeonato') {
+      await renderCampeonato(route.codigo);
     } else {
       await renderHome();
     }
@@ -227,7 +279,9 @@ async function render() {
 // ------------------------------------------------------------
 async function renderHome() {
   app.innerHTML = `<p class="muted" style="padding:60px 0;text-align:center;">Cargando…</p>`;
-  const [evento, clases] = await Promise.all([fetchEvento(), fetchClases()]);
+  const [evento, clases, campeonatos, trofeos] = await Promise.all([
+    fetchEvento(), fetchClases(), fetchCampeonatos(), fetchTrofeos()
+  ]);
 
   const demoBanner = DEMO_MODE ? `
     <div class="demo-banner">
@@ -276,16 +330,138 @@ async function renderHome() {
       ${clases.map(c => `
         <a class="clase-card" href="#/clase/${encodeURIComponent(c.codigo)}">
           <span class="publicada" ${c.clasificacion_publicada ? '' : 'hidden'} title="Clasificación publicada"></span>
-          <span class="codigo">${escapeHtml(c.codigo)}</span>
           <span class="titulo">${escapeHtml(c.titulo)}</span>
         </a>
       `).join('')}
     </div>
 
+    <div class="section-title">
+      <h2>Campeonatos</h2>
+      <span class="count">${campeonatos.length}</span>
+    </div>
+    <div class="clases-grid campeonatos-grid">
+      ${campeonatos.map(camp => `
+        <a class="clase-card campeonato-card" href="#/campeonato/${encodeURIComponent(camp.codigo)}">
+          <span class="publicada" ${camp.publicado ? '' : 'hidden'} title="Publicado"></span>
+          <span class="titulo">${escapeHtml(camp.titulo)}</span>
+          <span class="campeonato-estado">${camp.publicado && camp.oro_id ? '🏆 Resuelto' : 'Pendiente'}</span>
+        </a>
+      `).join('')}
+    </div>
+
+    <div class="section-title">
+      <h2>Trofeos</h2>
+      <span class="count">${trofeos.length}</span>
+    </div>
+    <div id="trofeos-section"></div>
+
     ${isAdmin() ? renderAdminEventoPanel(evento) : ''}
   `;
 
-  if (isAdmin()) wireAdminEventoPanel(evento);
+  await renderTrofeos(trofeos);
+  if (isAdmin()) {
+    wireAdminEventoPanel(evento);
+    wireTrofeosAdmin(trofeos);
+  }
+}
+
+// ------------------------------------------------------------
+// Trofeos (en la portada)
+// ------------------------------------------------------------
+function trofeoGanadorTexto(t) {
+  if (t.tipo === 'texto') return t.ganador_texto || null;
+  return t._caballo ? `${t._caballo.nombre} (dorsal ${t._caballo.dorsal ?? '—'}, clase ${t._caballo.clase_codigo})` : null;
+}
+
+async function renderTrofeos(trofeos) {
+  const cont = document.getElementById('trofeos-section');
+  if (!cont) return;
+  cont.innerHTML = `<p class="muted small">Cargando trofeos…</p>`;
+
+  let caballos = [];
+  if (trofeos.some(t => t.tipo === 'animal')) {
+    caballos = await fetchTodosCaballos();
+  }
+  trofeos.forEach(t => {
+    if (t.tipo === 'animal' && t.ganador_caballo_id) {
+      t._caballo = caballos.find(h => String(h.id) === String(t.ganador_caballo_id)) || null;
+    }
+  });
+
+  const admin = isAdmin();
+
+  cont.innerHTML = `
+    <div class="trofeos-grid">
+      ${trofeos.map(t => `
+        <div class="trofeo-card" data-id="${t.id}" data-tipo="${t.tipo}">
+          <span class="trofeo-titulo">🏅 ${escapeHtml(t.titulo)}</span>
+          ${admin ? (
+            t.tipo === 'texto'
+              ? `<input type="text" class="trofeo-input-texto" placeholder="Nombre del presentador" value="${escapeHtml(t.ganador_texto || '')}">`
+              : `<select class="trofeo-select">
+                   <option value="">— Sin adjudicar —</option>
+                   ${agruparPorClase(caballos).map(grupo => `
+                     <optgroup label="${escapeHtml(grupo.clase_titulo)}">
+                       ${grupo.caballos.map(h => `<option value="${h.id}" ${String(t.ganador_caballo_id) === String(h.id) ? 'selected' : ''}>${escapeHtml(h.nombre)} (dorsal ${h.dorsal ?? '—'})</option>`).join('')}
+                     </optgroup>
+                   `).join('')}
+                 </select>`
+          ) : `<span class="trofeo-ganador">${trofeoGanadorTexto(t) ? escapeHtml(trofeoGanadorTexto(t)) : '<em>Sin adjudicar todavía</em>'}</span>`}
+        </div>
+      `).join('')}
+    </div>
+    ${admin ? `<div style="margin-top:14px; display:flex; gap:12px; align-items:center;">
+      <button class="btn-primary" id="guardar-trofeos">Guardar trofeos</button>
+      <span class="save-status" id="trofeos-status"></span>
+    </div>` : ''}
+  `;
+}
+
+function agruparPorClase(caballos) {
+  const grupos = {};
+  const orden = [];
+  caballos.forEach(h => {
+    const key = h.clase_codigo || '—';
+    if (!grupos[key]) { grupos[key] = { clase_titulo: h.clase_titulo || key, caballos: [] }; orden.push(key); }
+    grupos[key].caballos.push(h);
+  });
+  return orden.map(k => grupos[k]);
+}
+
+function wireTrofeosAdmin(trofeos) {
+  const btn = document.getElementById('guardar-trofeos');
+  if (!btn) return;
+  const status = document.getElementById('trofeos-status');
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const cards = document.querySelectorAll('.trofeo-card');
+      const updates = [];
+      cards.forEach(card => {
+        const id = card.dataset.id;
+        if (card.dataset.tipo === 'texto') {
+          const val = card.querySelector('.trofeo-input-texto').value.trim();
+          updates.push({ id, cambios: { ganador_texto: val || null } });
+        } else {
+          const val = card.querySelector('.trofeo-select').value;
+          updates.push({ id, cambios: { ganador_caballo_id: val ? Number(val) : null } });
+        }
+      });
+      await Promise.all(updates.map(u => guardarTrofeo(u.id, u.cambios)));
+      updates.forEach(u => {
+        const t = trofeos.find(x => String(x.id) === u.id);
+        if (t) Object.assign(t, u.cambios);
+      });
+      setSaveStatus(status, 'Trofeos guardados ✓', false);
+      await renderTrofeos(trofeos);
+      wireTrofeosAdmin(trofeos);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus(status, 'Error al guardar', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
 }
 
 function logoRow(items) {
@@ -374,16 +550,14 @@ async function renderClase(codigo) {
 function paintClase(clase, caballos) {
   const admin = isAdmin();
   const salida = [...caballos].sort((a, b) => (a.dorsal ?? 999) - (b.dorsal ?? 999));
-  const clasif = [...caballos].sort((a, b) => {
-    if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
-    if (a.posicion != null) return -1;
-    if (b.posicion != null) return 1;
-    const ta = totalFinal(a), tb = totalFinal(b);
-    if (ta != null && tb != null) return tb - ta;
-    if (ta != null) return -1;
-    if (tb != null) return 1;
-    return (a.dorsal ?? 0) - (b.dorsal ?? 0);
-  });
+  const clasif = caballos
+    .filter(h => totalFinal(h) != null)
+    .sort((a, b) => {
+      if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
+      if (a.posicion != null) return -1;
+      if (b.posicion != null) return 1;
+      return totalFinal(b) - totalFinal(a);
+    });
 
   app.innerHTML = `
     <a class="back-link" href="#/">← Volver a las clases</a>
@@ -412,37 +586,95 @@ function paintClase(clase, caballos) {
 
   const panel = document.getElementById('tab-panel');
   if (activeTab === 'salida') {
-    panel.innerHTML = tablaSalida(salida);
+    panel.innerHTML = tablaSalida(salida, admin);
+    if (admin) wireOrdenSalidaAdmin(clase, salida, caballos);
   } else {
     panel.innerHTML = (admin ? adminBar(clase) : '') + tablaClasificacion(clasif, clase, admin);
-    if (admin) wireClasificacionAdmin(clase, clasif);
+    if (admin) wireClasificacionAdmin(clase, clasif, caballos);
   }
 }
 
-function tablaSalida(caballos) {
+// ------------------------------------------------------------
+// Pestaña: ORDEN DE SALIDA — la hoja de trabajo con las notas
+// ------------------------------------------------------------
+function tablaSalida(caballos, admin) {
   if (!caballos.length) return `<div class="empty-state"><strong>Sin inscripciones todavía</strong></div>`;
   return `
-    <div class="table-wrap">
-      <table class="resultados">
-        <thead><tr>
-          <th>Dorsal</th><th>Nombre</th><th>Nacimiento</th><th>Capa</th><th>Criador / Propietario</th>
-        </tr></thead>
-        <tbody>
-          ${caballos.map(h => `
-            <tr>
-              <td class="dorsal-cell">${h.dorsal ?? '—'}</td>
-              <td class="nombre-cell">${escapeHtml(h.nombre)}
-                ${(h.padre || h.madre) ? `<span class="detalle">${escapeHtml(h.padre || '')}${h.padre && h.madre ? ' × ' : ''}${escapeHtml(h.madre || '')}</span>` : ''}
-              </td>
-              <td>${fmtFecha(h.fecha_nacimiento)}</td>
-              <td>${escapeHtml(h.capa || '—')}</td>
-              <td>${escapeHtml(h.criador || h.propietario || '—')}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+    <div class="caballos-clasif">
+      ${caballos.map(h => `
+        <div class="caballo-card" data-id="${h.id}">
+          <div class="caballo-card-head">
+            <div class="pos-block"><span class="dorsal-circle">${h.dorsal ?? '—'}</span></div>
+            <div class="caballo-card-info">
+              <strong class="caballo-nombre">${escapeHtml(h.nombre)}</strong>
+              <span class="caballo-sub">
+                ${fmtFecha(h.fecha_nacimiento)} · ${escapeHtml(h.capa || '—')}
+                ${h.criador || h.propietario ? ' · ' + escapeHtml(h.criador || h.propietario) : ''}
+              </span>
+            </div>
+          </div>
+          ${scoreTable(h, admin)}
+        </div>
+      `).join('')}
     </div>
+    ${admin ? `<div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
+      <button class="btn-primary" id="guardar-salida">Guardar notas</button>
+      <span class="save-status" id="guardar-salida-status"></span>
+    </div>` : ''}
   `;
+}
+
+function leerNotasDeTarjeta(card) {
+  const h = {};
+  card.querySelectorAll('.score-input').forEach(inp => {
+    h[`j${inp.dataset.juez}_${inp.dataset.criterio}`] = inp.value === '' ? null : Number(inp.value);
+  });
+  return h;
+}
+
+function recalcularTarjeta(card) {
+  const notas = leerNotasDeTarjeta(card);
+  const t1 = totalJuez(notas, 1);
+  const t2 = totalJuez(notas, 2);
+  card.querySelector('[data-total-juez="1"]').textContent = fmtNum(t1);
+  card.querySelector('[data-total-juez="2"]').textContent = fmtNum(t2);
+  card.querySelector('[data-total-final]').textContent = fmtNum(totalFinal(notas));
+}
+
+function wireOrdenSalidaAdmin(clase, salida, todosCaballos) {
+  document.querySelectorAll('.score-input').forEach(inp => {
+    inp.addEventListener('input', () => recalcularTarjeta(inp.closest('.caballo-card')));
+  });
+
+  const guardarBtn = document.getElementById('guardar-salida');
+  const status = document.getElementById('guardar-salida-status');
+  guardarBtn?.addEventListener('click', async () => {
+    guardarBtn.disabled = true;
+    try {
+      const cards = document.querySelectorAll('#tab-panel .caballo-card');
+      const updates = [];
+      cards.forEach(card => {
+        const id = card.dataset.id;
+        const notas = leerNotasDeTarjeta(card);
+        updates.push({ id, ...notas });
+      });
+      await Promise.all(updates.map(u => {
+        const { id, ...cambios } = u;
+        return guardarCaballo(id, cambios);
+      }));
+      // reflejar los cambios en memoria para que la pestaña Clasificación los vea sin recargar
+      updates.forEach(u => {
+        const h = todosCaballos.find(x => String(x.id) === u.id);
+        if (h) Object.assign(h, u);
+      });
+      setSaveStatus(status, 'Notas guardadas ✓', false);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus(status, 'Error al guardar', true);
+    } finally {
+      guardarBtn.disabled = false;
+    }
+  });
 }
 
 function adminBar(clase) {
@@ -483,36 +715,40 @@ function scoreTable(h, admin) {
   `;
 }
 
+// ------------------------------------------------------------
+// Pestaña: CLASIFICACIÓN — resumen, solo caballos ya puntuados
+// ------------------------------------------------------------
 function tablaClasificacion(caballos, clase, admin) {
   if (!admin && !clase.clasificacion_publicada) {
     return `<div class="empty-state"><strong>Clasificación aún no publicada</strong>La organización la publicará en cuanto los jueces terminen de valorar esta clase.</div>`;
   }
-  if (!caballos.length) return `<div class="empty-state"><strong>Sin inscripciones todavía</strong></div>`;
+  if (!caballos.length) {
+    return `<div class="empty-state"><strong>Todavía no hay caballos puntuados</strong>En cuanto se anoten notas en "Orden de salida", aparecerán aquí.</div>`;
+  }
 
   return `
     <div class="caballos-clasif">
       ${caballos.map((h, i) => `
-        <div class="caballo-card" data-id="${h.id}">
-          <div class="caballo-card-head">
+        <div class="resumen-card" data-id="${h.id}">
+          <div class="resumen-row">
             <div class="pos-block">
-              ${admin ? `
-                <button class="btn-icon" data-move="up" ${i === 0 ? 'disabled' : ''} title="Subir puesto">↑</button>
-                <span class="pos-num">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º*'}</span>
-                <button class="btn-icon" data-move="down" ${i === caballos.length - 1 ? 'disabled' : ''} title="Bajar puesto">↓</button>
-              ` : `<span class="pos-num pos-num-public">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º'}</span>`}
+              ${admin
+                ? `<input type="number" min="1" class="pos-input-clasif" value="${h.posicion ?? ''}" placeholder="${i + 1}">`
+                : `<span class="pos-num pos-num-public">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º'}</span>`}
             </div>
-            <div class="caballo-card-info">
-              <span class="dorsal-tag">Dorsal ${h.dorsal ?? '—'}</span>
+            <div class="resumen-info">
               <strong class="caballo-nombre">${escapeHtml(h.nombre)}</strong>
-              <span class="caballo-sub">${escapeHtml(h.criador || h.propietario || '')}</span>
+              <span class="caballo-sub">Dorsal ${h.dorsal ?? '—'}</span>
             </div>
+            <div class="resumen-total">${fmtNum(totalFinal(h))}</div>
+            <button class="btn-ghost btn-ver-notas" data-toggle="${h.id}">Ver notas</button>
           </div>
-          ${scoreTable(h, admin)}
+          <div class="detalle-notas" id="notas-${h.id}" hidden>${scoreTable(h, false)}</div>
         </div>
       `).join('')}
     </div>
     ${admin ? `
-      <p class="muted small">* Sin posición fijada todavía: se muestran ordenados por puntuación total. Usa ↑ ↓ para fijar el puesto real.</p>
+      <p class="muted small">Sin casilla de puesto rellenada: se muestran ordenados por puntuación, de mayor a menor.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-clasificacion">Guardar cambios</button>
         <span class="save-status" id="guardar-status"></span>
@@ -520,7 +756,119 @@ function tablaClasificacion(caballos, clase, admin) {
   `;
 }
 
-function wireClasificacionAdmin(clase, caballos) {
+// ------------------------------------------------------------
+// Vista: CAMPEONATO (Oro / Plata / Bronce)
+// ------------------------------------------------------------
+async function renderCampeonato(codigo) {
+  app.innerHTML = `<p class="muted" style="padding:60px 0;text-align:center;">Cargando…</p>`;
+  const camp = await fetchCampeonato(codigo);
+  if (!camp) {
+    app.innerHTML = `<div class="empty-state"><strong>Campeonato no encontrado</strong><a href="#/">Volver a la portada</a></div>`;
+    return;
+  }
+  const todosCaballos = await fetchTodosCaballos();
+  const admin = isAdmin();
+
+  const clasesFeeder = camp.clases || [];
+  const candidatos = todosCaballos
+    .filter(h => clasesFeeder.includes(h.clase_codigo) && h.posicion != null && h.posicion <= 3)
+    .sort((a, b) => (a.clase_codigo.localeCompare(b.clase_codigo)) || (a.posicion - b.posicion));
+
+  const buscar = (id) => todosCaballos.find(h => String(h.id) === String(id)) || null;
+  const puestos = [
+    { key: 'oro_id', label: 'Oro', medalla: '🥇' },
+    { key: 'plata_id', label: 'Plata', medalla: '🥈' },
+    { key: 'bronce_id', label: 'Bronce', medalla: '🥉' },
+  ];
+
+  app.innerHTML = `
+    <a class="back-link" href="#/">← Volver a la portada</a>
+    <div class="clase-header">
+      <div><h1>${escapeHtml(camp.titulo)}</h1></div>
+      <span class="badge">${clasesFeeder.map(c => 'Clase ' + c).join(' · ')}</span>
+    </div>
+
+    ${admin ? `
+      <div class="admin-bar">
+        <div class="left">
+          <label class="switch">
+            <input type="checkbox" id="publicar-campeonato-toggle" ${camp.publicado ? 'checked' : ''}>
+            Publicar este campeonato al público
+          </label>
+        </div>
+        <span class="save-status" id="campeonato-status"></span>
+      </div>
+    ` : ''}
+
+    ${(!admin && !camp.publicado) ? `
+      <div class="empty-state"><strong>Campeonato aún no publicado</strong>La organización lo publicará en cuanto se decida.</div>
+    ` : `
+      <div class="podio">
+        ${puestos.map(p => {
+          const h = buscar(camp[p.key]);
+          return `
+            <div class="podio-puesto">
+              <div class="podio-medalla">${p.medalla} ${p.label}</div>
+              ${admin ? `
+                <select class="podio-select" data-key="${p.key}">
+                  <option value="">— Sin elegir —</option>
+                  ${candidatos.map(c => `<option value="${c.id}" ${String(camp[p.key]) === String(c.id) ? 'selected' : ''}>${escapeHtml(c.nombre)} (${c.posicion}º clase ${c.clase_codigo})</option>`).join('')}
+                </select>
+              ` : `
+                <div class="podio-caballo">${h ? escapeHtml(h.nombre) : '<em>Sin adjudicar</em>'}</div>
+              `}
+            </div>
+          `;
+        }).join('')}
+      </div>
+      ${admin ? `<div style="margin-top:16px; display:flex; gap:12px; align-items:center;">
+        <button class="btn-primary" id="guardar-campeonato">Guardar campeonato</button>
+        <span class="save-status" id="guardar-campeonato-status"></span>
+      </div>` : ''}
+    `}
+
+    ${admin && !candidatos.length ? `<p class="muted small" style="margin-top:16px;">Todavía no hay ningún caballo con 1º, 2º o 3º puesto en las clases ${clasesFeeder.join(', ')} — publica primero esas clasificaciones.</p>` : ''}
+  `;
+
+  if (admin) wireCampeonatoAdmin(camp);
+}
+
+function wireCampeonatoAdmin(camp) {
+  const toggle = document.getElementById('publicar-campeonato-toggle');
+  const status = document.getElementById('campeonato-status');
+  toggle?.addEventListener('change', async () => {
+    try {
+      await guardarCampeonato(camp.id, { publicado: toggle.checked });
+      camp.publicado = toggle.checked;
+      setSaveStatus(status, 'Guardado ✓', false);
+    } catch (err) {
+      setSaveStatus(status, 'Error al guardar', true);
+      toggle.checked = !toggle.checked;
+    }
+  });
+
+  const guardarBtn = document.getElementById('guardar-campeonato');
+  const guardarStatus = document.getElementById('guardar-campeonato-status');
+  guardarBtn?.addEventListener('click', async () => {
+    guardarBtn.disabled = true;
+    try {
+      const cambios = {};
+      document.querySelectorAll('.podio-select').forEach(sel => {
+        cambios[sel.dataset.key] = sel.value ? Number(sel.value) : null;
+      });
+      await guardarCampeonato(camp.id, cambios);
+      Object.assign(camp, cambios);
+      setSaveStatus(guardarStatus, 'Campeonato guardado ✓', false);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus(guardarStatus, 'Error al guardar', true);
+    } finally {
+      guardarBtn.disabled = false;
+    }
+  });
+}
+
+function wireClasificacionAdmin(clase, clasif, todosCaballos) {
   const status = document.getElementById('clase-status');
   const toggle = document.getElementById('publicar-toggle');
   toggle?.addEventListener('change', async () => {
@@ -534,47 +882,12 @@ function wireClasificacionAdmin(clase, caballos) {
     }
   });
 
-  // orden local en memoria para los botones subir/bajar (no repinta todo, para no perder lo que se está escribiendo)
-  let orden = [...caballos];
-
-  function leerNotasDeTarjeta(card) {
-    const h = {};
-    card.querySelectorAll('.score-input').forEach(inp => {
-      h[`j${inp.dataset.juez}_${inp.dataset.criterio}`] = inp.value === '' ? null : Number(inp.value);
-    });
-    return h;
-  }
-
-  function recalcularTarjeta(card) {
-    const notas = leerNotasDeTarjeta(card);
-    const t1 = totalJuez(notas, 1);
-    const t2 = totalJuez(notas, 2);
-    card.querySelector('[data-total-juez="1"]').textContent = fmtNum(t1);
-    card.querySelector('[data-total-juez="2"]').textContent = fmtNum(t2);
-    card.querySelector('[data-total-final]').textContent = fmtNum(totalFinal(notas));
-  }
-
-  document.querySelectorAll('.score-input').forEach(inp => {
-    inp.addEventListener('input', () => recalcularTarjeta(inp.closest('.caballo-card')));
-  });
-
-  function repintar() {
-    const panel = document.getElementById('tab-panel');
-    panel.innerHTML = adminBar(clase) + tablaClasificacion(orden, clase, true);
-    wireClasificacionAdmin(clase, orden);
-  }
-
-  document.querySelectorAll('[data-move]').forEach(btn => {
+  document.querySelectorAll('.btn-ver-notas').forEach(btn => {
     btn.addEventListener('click', () => {
-      const card = btn.closest('.caballo-card');
-      const idx = orden.findIndex(h => String(h.id) === card.dataset.id);
-      const dir = btn.dataset.move === 'up' ? -1 : 1;
-      const swapIdx = idx + dir;
-      if (swapIdx < 0 || swapIdx >= orden.length) return;
-      [orden[idx], orden[swapIdx]] = [orden[swapIdx], orden[idx]];
-      // al mover manualmente, fijamos posiciones 1..n según el nuevo orden
-      orden.forEach((h, i) => { h.posicion = i + 1; });
-      repintar();
+      const panel = document.getElementById(`notas-${btn.dataset.toggle}`);
+      const abierto = !panel.hidden;
+      panel.hidden = abierto;
+      btn.textContent = abierto ? 'Ver notas' : 'Ocultar notas';
     });
   });
 
@@ -583,20 +896,21 @@ function wireClasificacionAdmin(clase, caballos) {
   guardarBtn?.addEventListener('click', async () => {
     guardarBtn.disabled = true;
     try {
-      const cards = document.querySelectorAll('#tab-panel .caballo-card');
+      const cards = document.querySelectorAll('#tab-panel .resumen-card');
       const updates = [];
-      cards.forEach((card, i) => {
+      cards.forEach(card => {
         const id = card.dataset.id;
-        const notas = leerNotasDeTarjeta(card);
-        const caballoOriginal = orden.find(h => String(h.id) === id);
-        const posicion = caballoOriginal.posicion ?? null;
-        updates.push({ id, posicion, ...notas });
+        const posInput = card.querySelector('.pos-input-clasif');
+        const posicion = posInput.value ? parseInt(posInput.value, 10) : null;
+        updates.push({ id, posicion });
       });
-      await Promise.all(updates.map(u => {
-        const { id, ...cambios } = u;
-        return guardarCaballo(id, cambios);
-      }));
+      await Promise.all(updates.map(u => guardarCaballo(u.id, { posicion: u.posicion })));
+      updates.forEach(u => {
+        const h = todosCaballos.find(x => String(x.id) === u.id);
+        if (h) h.posicion = u.posicion;
+      });
       setSaveStatus(guardarStatus, 'Clasificación guardada ✓', false);
+      paintClase(clase, todosCaballos);
     } catch (err) {
       console.error(err);
       setSaveStatus(guardarStatus, 'Error al guardar', true);

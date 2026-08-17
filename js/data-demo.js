@@ -1,11 +1,12 @@
 window.DEMO_CLASES = [
   {
     "codigo": "1A",
-    "titulo": "1 AÑO · HEMBRAS",
+    "titulo": "1 Año · Hembras A",
     "orden": 1,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 1,
         "dorsal": 1,
         "nombre": "DONNA H.V.",
         "fecha_nacimiento": "2025-08-16",
@@ -28,6 +29,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 2,
         "dorsal": 2,
         "nombre": "ALIRA DE CARO",
         "fecha_nacimiento": "2025-06-05",
@@ -50,6 +52,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 3,
         "dorsal": 3,
         "nombre": "MZ SHAMS",
         "fecha_nacimiento": "2025-05-22",
@@ -72,6 +75,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 4,
         "dorsal": 4,
         "nombre": "LAA DAMARIS",
         "fecha_nacimiento": "2025-03-18",
@@ -97,11 +101,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "1B",
-    "titulo": "1 AÑO · HEMBRAS",
+    "titulo": "1 Año · Hembras B",
     "orden": 2,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 5,
         "dorsal": 5,
         "nombre": "SG TRENZA",
         "fecha_nacimiento": "2025-03-08",
@@ -124,6 +129,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 6,
         "dorsal": 6,
         "nombre": "BELA DE LABA",
         "fecha_nacimiento": "2025-03-03",
@@ -146,6 +152,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 7,
         "dorsal": 7,
         "nombre": "SG TRIPOLI",
         "fecha_nacimiento": "2025-02-26",
@@ -171,11 +178,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "2A",
-    "titulo": "1 AÑO · MACHOS",
+    "titulo": "1 Año · Machos A",
     "orden": 3,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 8,
         "dorsal": 8,
         "nombre": "SUNDAR AA",
         "fecha_nacimiento": "2025-09-11",
@@ -198,6 +206,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 9,
         "dorsal": 9,
         "nombre": "AZHIR SAHIB NE",
         "fecha_nacimiento": "2025-08-20",
@@ -220,6 +229,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 10,
         "dorsal": 10,
         "nombre": "OBIXENTH AL ZUBI",
         "fecha_nacimiento": "2025-06-05",
@@ -242,6 +252,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 11,
         "dorsal": 11,
         "nombre": "SOÑADOR A.A.",
         "fecha_nacimiento": "2025-05-15",
@@ -267,11 +278,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "2B",
-    "titulo": "1 AÑO · MACHOS",
+    "titulo": "1 Año · Machos B",
     "orden": 4,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 12,
         "dorsal": 12,
         "nombre": "MZ SHAMAL",
         "fecha_nacimiento": "2025-05-07",
@@ -294,6 +306,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 13,
         "dorsal": 13,
         "nombre": "SHIO ISAL",
         "fecha_nacimiento": "2025-04-20",
@@ -316,6 +329,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 14,
         "dorsal": 14,
         "nombre": "NUNO R.C.",
         "fecha_nacimiento": "2025-03-18",
@@ -341,11 +355,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "3",
-    "titulo": "2 AÑOS · HEMBRAS",
+    "titulo": "2 Años · Hembras",
     "orden": 5,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 15,
         "dorsal": 15,
         "nombre": "L.G. UNIKA",
         "fecha_nacimiento": "2024-07-08",
@@ -368,6 +383,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 16,
         "dorsal": 16,
         "nombre": "LAA CASANDRA",
         "fecha_nacimiento": "2024-05-09",
@@ -390,6 +406,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 17,
         "dorsal": 17,
         "nombre": "MZ ANNA ALISHEEBA",
         "fecha_nacimiento": "2024-04-27",
@@ -412,6 +429,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 18,
         "dorsal": 18,
         "nombre": "JAMAL YAMIRA",
         "fecha_nacimiento": "2024-03-23",
@@ -434,6 +452,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 19,
         "dorsal": 19,
         "nombre": "SHIO JAVA",
         "fecha_nacimiento": "2024-03-21",
@@ -459,11 +478,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "4",
-    "titulo": "3 AÑOS · HEMBRAS",
+    "titulo": "3 Años · Hembras",
     "orden": 6,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 20,
         "dorsal": 20,
         "nombre": "MAGIC DE MI SUEÑO",
         "fecha_nacimiento": "2023-10-20",
@@ -486,6 +506,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 21,
         "dorsal": 21,
         "nombre": "SHIO JULIA",
         "fecha_nacimiento": "2023-07-17",
@@ -508,6 +529,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 22,
         "dorsal": 22,
         "nombre": "LEENA AL SHIRAA",
         "fecha_nacimiento": "2023-06-13",
@@ -530,6 +552,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 23,
         "dorsal": 23,
         "nombre": "AMS AL ZAHRA",
         "fecha_nacimiento": "2023-06-07",
@@ -552,6 +575,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 24,
         "dorsal": 24,
         "nombre": "LUANA AL SHIRAA",
         "fecha_nacimiento": "2023-04-29",
@@ -577,11 +601,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "5",
-    "titulo": "2 AÑOS · MACHOS",
+    "titulo": "2 Años · Machos",
     "orden": 7,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 25,
         "dorsal": 25,
         "nombre": "APOLO PB",
         "fecha_nacimiento": "2024-04-23",
@@ -604,6 +629,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 26,
         "dorsal": 26,
         "nombre": "EROS PB",
         "fecha_nacimiento": "2024-04-20",
@@ -626,6 +652,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 27,
         "dorsal": 27,
         "nombre": "SG SAMOS",
         "fecha_nacimiento": "2024-04-11",
@@ -648,6 +675,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 28,
         "dorsal": 28,
         "nombre": "LAA CYRO",
         "fecha_nacimiento": "2024-03-24",
@@ -670,6 +698,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 29,
         "dorsal": 29,
         "nombre": "VOLCAN DE TAGORO*",
         "fecha_nacimiento": "2024-03-24",
@@ -695,11 +724,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "6",
-    "titulo": "3 AÑOS · MACHOS",
+    "titulo": "3 Años · Machos",
     "orden": 8,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 30,
         "dorsal": 30,
         "nombre": "JAMAL XANDROS",
         "fecha_nacimiento": "2023-09-26",
@@ -722,6 +752,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 31,
         "dorsal": 31,
         "nombre": "JOAN",
         "fecha_nacimiento": "2023-05-06",
@@ -747,11 +778,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "7",
-    "titulo": "5-6 AÑOS · HEMBRAS",
+    "titulo": "Yeguas de 4 a 6 años",
     "orden": 9,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 32,
         "dorsal": 32,
         "nombre": "AMEIXENDA DE LUC",
         "fecha_nacimiento": "2021-06-28",
@@ -774,6 +806,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 33,
         "dorsal": 33,
         "nombre": "VOLCAN DE ISORA*",
         "fecha_nacimiento": "2021-05-31",
@@ -796,6 +829,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 34,
         "dorsal": 34,
         "nombre": "SG ONZA",
         "fecha_nacimiento": "2020-05-19",
@@ -818,6 +852,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 35,
         "dorsal": 35,
         "nombre": "AL-QAHIRA GA",
         "fecha_nacimiento": "2020-05-18",
@@ -843,11 +878,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "8",
-    "titulo": "7-9 AÑOS · HEMBRAS",
+    "titulo": "Yeguas de 7 a 10 años",
     "orden": 10,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 36,
         "dorsal": 36,
         "nombre": "TCHAATA LADY MONA",
         "fecha_nacimiento": "2019-03-26",
@@ -870,6 +906,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 37,
         "dorsal": 37,
         "nombre": "ULMARIA B",
         "fecha_nacimiento": "2018-04-28",
@@ -892,6 +929,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 38,
         "dorsal": 38,
         "nombre": "REINA A.A.",
         "fecha_nacimiento": "2018-04-12",
@@ -914,6 +952,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 39,
         "dorsal": 39,
         "nombre": "BERNARDINA DE LABA",
         "fecha_nacimiento": "2017-06-08",
@@ -936,6 +975,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 40,
         "dorsal": 40,
         "nombre": "AMS ARALIA",
         "fecha_nacimiento": "2017-05-26",
@@ -961,11 +1001,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "9",
-    "titulo": "15 AÑOS · HEMBRAS",
+    "titulo": "Yeguas de 11 años en adelante",
     "orden": 11,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 41,
         "dorsal": 41,
         "nombre": "ESCITIA*",
         "fecha_nacimiento": "2011-04-04",
@@ -991,11 +1032,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "10",
-    "titulo": "4-6 AÑOS · MACHOS",
+    "titulo": "Sementales de 4 a 6 años",
     "orden": 12,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 42,
         "dorsal": 42,
         "nombre": "PM SANIS",
         "fecha_nacimiento": "2022-06-08",
@@ -1018,6 +1060,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 43,
         "dorsal": 43,
         "nombre": "MARCO POLO EA",
         "fecha_nacimiento": "2021-04-22",
@@ -1040,6 +1083,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 44,
         "dorsal": 44,
         "nombre": "AD DHALI GA",
         "fecha_nacimiento": "2021-04-10",
@@ -1062,6 +1106,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 45,
         "dorsal": 45,
         "nombre": "MESIAR R.C.",
         "fecha_nacimiento": "2020-06-15",
@@ -1087,11 +1132,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "11",
-    "titulo": "7-10 AÑOS · MACHOS",
+    "titulo": "Sementales de 7 a 10 años",
     "orden": 13,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 46,
         "dorsal": 46,
         "nombre": "L.G. RAP",
         "fecha_nacimiento": "2019-07-22",
@@ -1114,6 +1160,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 47,
         "dorsal": 47,
         "nombre": "ABHA CALIFA",
         "fecha_nacimiento": "2017-04-29",
@@ -1136,6 +1183,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 48,
         "dorsal": 48,
         "nombre": "RA YM",
         "fecha_nacimiento": "2017-04-03",
@@ -1158,6 +1206,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 49,
         "dorsal": 49,
         "nombre": "GORO*",
         "fecha_nacimiento": "2016-02-28",
@@ -1183,11 +1232,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "12",
-    "titulo": "14-15 AÑOS · MACHOS",
+    "titulo": "Sementales de 11 años en adelante",
     "orden": 14,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 50,
         "dorsal": 50,
         "nombre": "CNOSOS E.A.",
         "fecha_nacimiento": "2012-04-29",
@@ -1210,6 +1260,7 @@ window.DEMO_CLASES = [
         "posicion": null
       },
       {
+        "id": 51,
         "dorsal": 51,
         "nombre": "LANCEADOR*",
         "fecha_nacimiento": "2011-04-10",
@@ -1235,11 +1286,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "13",
-    "titulo": "FUTURITY · HEMBRAS",
+    "titulo": "Futurity · Hembras",
     "orden": 15,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 52,
         "dorsal": 52,
         "nombre": "SG UGANDA",
         "fecha_nacimiento": "2026-05-18",
@@ -1265,11 +1317,12 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "14",
-    "titulo": "FUTURITY · MACHOS",
+    "titulo": "Futurity · Machos",
     "orden": 16,
     "clasificacion_publicada": false,
     "caballos": [
       {
+        "id": 53,
         "dorsal": 53,
         "nombre": "GHAZAL GA",
         "fecha_nacimiento": "2026-04-30",
@@ -1292,5 +1345,139 @@ window.DEMO_CLASES = [
         "posicion": null
       }
     ]
+  }
+];
+
+window.DEMO_CAMPEONATOS = [
+  {
+    "codigo": "potras-yearling",
+    "titulo": "Campeonato Potras Yearling",
+    "orden": 1,
+    "clases": [
+      "1A",
+      "1B"
+    ],
+    "oro_id": null,
+    "plata_id": null,
+    "bronce_id": null,
+    "publicado": false
+  },
+  {
+    "codigo": "potras-junior",
+    "titulo": "Campeonato Potras Junior",
+    "orden": 2,
+    "clases": [
+      "3",
+      "4"
+    ],
+    "oro_id": null,
+    "plata_id": null,
+    "bronce_id": null,
+    "publicado": false
+  },
+  {
+    "codigo": "potros-yearling",
+    "titulo": "Campeonato Potros Yearling",
+    "orden": 3,
+    "clases": [
+      "2A",
+      "2B"
+    ],
+    "oro_id": null,
+    "plata_id": null,
+    "bronce_id": null,
+    "publicado": false
+  },
+  {
+    "codigo": "potros-junior",
+    "titulo": "Campeonato Potros Junior",
+    "orden": 4,
+    "clases": [
+      "5",
+      "6"
+    ],
+    "oro_id": null,
+    "plata_id": null,
+    "bronce_id": null,
+    "publicado": false
+  },
+  {
+    "codigo": "yeguas",
+    "titulo": "Campeonato de Yeguas",
+    "orden": 5,
+    "clases": [
+      "7",
+      "8",
+      "9"
+    ],
+    "oro_id": null,
+    "plata_id": null,
+    "bronce_id": null,
+    "publicado": false
+  },
+  {
+    "codigo": "sementales",
+    "titulo": "Campeonato de Sementales",
+    "orden": 6,
+    "clases": [
+      "10",
+      "11",
+      "12"
+    ],
+    "oro_id": null,
+    "plata_id": null,
+    "bronce_id": null,
+    "publicado": false
+  }
+];
+
+window.DEMO_TROFEOS = [
+  {
+    "codigo": "mejor-cabeza",
+    "titulo": "Mejor Cabeza",
+    "orden": 1,
+    "tipo": "animal",
+    "ganador_caballo_id": null,
+    "ganador_texto": null
+  },
+  {
+    "codigo": "mejor-movimiento",
+    "titulo": "Mejor Movimiento",
+    "orden": 2,
+    "tipo": "animal",
+    "ganador_caballo_id": null,
+    "ganador_texto": null
+  },
+  {
+    "codigo": "prueba-libertad",
+    "titulo": "Prueba de Libertad",
+    "orden": 3,
+    "tipo": "animal",
+    "ganador_caballo_id": null,
+    "ganador_texto": null
+  },
+  {
+    "codigo": "mejor-presentador",
+    "titulo": "Mejor Presentador",
+    "orden": 4,
+    "tipo": "texto",
+    "ganador_caballo_id": null,
+    "ganador_texto": null
+  },
+  {
+    "codigo": "mejor-puntuacion",
+    "titulo": "Mejor Puntuación (Best Show)",
+    "orden": 5,
+    "tipo": "animal",
+    "ganador_caballo_id": null,
+    "ganador_texto": null
+  },
+  {
+    "codigo": "mejor-pure-spanish",
+    "titulo": "Mejor Pure Spanish",
+    "orden": 6,
+    "tipo": "animal",
+    "ganador_caballo_id": null,
+    "ganador_texto": null
   }
 ];

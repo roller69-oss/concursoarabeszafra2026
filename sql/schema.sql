@@ -48,6 +48,41 @@ create table if not exists caballos (
 
 create index if not exists idx_caballos_clase on caballos(clase_id);
 
+-- 4) Campeonatos: juntan a los 3 primeros de varias clases (sin fórmula, se elige a mano)
+create table if not exists campeonatos (
+  id serial primary key,
+  codigo text unique not null,
+  titulo text not null,
+  orden int not null default 0,
+  clases jsonb not null default '[]'::jsonb,   -- códigos de clase que alimentan este campeonato, ej: ["1A","1B"]
+  oro_id int references caballos(id),
+  plata_id int references caballos(id),
+  bronce_id int references caballos(id),
+  publicado boolean not null default false
+);
+
+-- 5) Trofeos especiales: un único ganador cada uno
+create table if not exists trofeos (
+  id serial primary key,
+  codigo text unique not null,
+  titulo text not null,
+  orden int not null default 0,
+  tipo text not null default 'animal',         -- 'animal' (se elige un caballo) o 'texto' (se escribe a mano)
+  ganador_caballo_id int references caballos(id),
+  ganador_texto text
+);
+
+alter table campeonatos enable row level security;
+alter table trofeos enable row level security;
+
+create policy "lectura publica campeonatos" on campeonatos for select using (true);
+create policy "lectura publica trofeos" on trofeos for select using (true);
+
+create policy "admin escribe campeonatos" on campeonatos
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "admin escribe trofeos" on trofeos
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
 -- ============================================================
 -- SEGURIDAD: todo el mundo puede leer, solo un usuario logueado
 -- (tu cuenta admin) puede escribir.

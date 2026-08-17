@@ -1,23 +1,25 @@
 -- Seed de datos: Zafra 2026 - Concurso de Pura Raza Árabe
 -- Generado automáticamente a partir del Excel de inscripciones
 
-insert into clases (codigo, titulo, orden) values ('1A', '1 AÑO · HEMBRAS', 1);
-insert into clases (codigo, titulo, orden) values ('1B', '1 AÑO · HEMBRAS', 2);
-insert into clases (codigo, titulo, orden) values ('2A', '1 AÑO · MACHOS', 3);
-insert into clases (codigo, titulo, orden) values ('2B', '1 AÑO · MACHOS', 4);
-insert into clases (codigo, titulo, orden) values ('3', '2 AÑOS · HEMBRAS', 5);
-insert into clases (codigo, titulo, orden) values ('4', '3 AÑOS · HEMBRAS', 6);
-insert into clases (codigo, titulo, orden) values ('5', '2 AÑOS · MACHOS', 7);
-insert into clases (codigo, titulo, orden) values ('6', '3 AÑOS · MACHOS', 8);
-insert into clases (codigo, titulo, orden) values ('7', '5-6 AÑOS · HEMBRAS', 9);
-insert into clases (codigo, titulo, orden) values ('8', '7-9 AÑOS · HEMBRAS', 10);
-insert into clases (codigo, titulo, orden) values ('9', '15 AÑOS · HEMBRAS', 11);
-insert into clases (codigo, titulo, orden) values ('10', '4-6 AÑOS · MACHOS', 12);
-insert into clases (codigo, titulo, orden) values ('11', '7-10 AÑOS · MACHOS', 13);
-insert into clases (codigo, titulo, orden) values ('12', '14-15 AÑOS · MACHOS', 14);
-insert into clases (codigo, titulo, orden) values ('13', 'FUTURITY · HEMBRAS', 15);
-insert into clases (codigo, titulo, orden) values ('14', 'FUTURITY · MACHOS', 16);
+-- Clases
+insert into clases (codigo, titulo, orden) values ('1A', '1 Año · Hembras A', 1);
+insert into clases (codigo, titulo, orden) values ('1B', '1 Año · Hembras B', 2);
+insert into clases (codigo, titulo, orden) values ('2A', '1 Año · Machos A', 3);
+insert into clases (codigo, titulo, orden) values ('2B', '1 Año · Machos B', 4);
+insert into clases (codigo, titulo, orden) values ('3', '2 Años · Hembras', 5);
+insert into clases (codigo, titulo, orden) values ('4', '3 Años · Hembras', 6);
+insert into clases (codigo, titulo, orden) values ('5', '2 Años · Machos', 7);
+insert into clases (codigo, titulo, orden) values ('6', '3 Años · Machos', 8);
+insert into clases (codigo, titulo, orden) values ('7', 'Yeguas de 4 a 6 años', 9);
+insert into clases (codigo, titulo, orden) values ('8', 'Yeguas de 7 a 10 años', 10);
+insert into clases (codigo, titulo, orden) values ('9', 'Yeguas de 11 años en adelante', 11);
+insert into clases (codigo, titulo, orden) values ('10', 'Sementales de 4 a 6 años', 12);
+insert into clases (codigo, titulo, orden) values ('11', 'Sementales de 7 a 10 años', 13);
+insert into clases (codigo, titulo, orden) values ('12', 'Sementales de 11 años en adelante', 14);
+insert into clases (codigo, titulo, orden) values ('13', 'Futurity · Hembras', 15);
+insert into clases (codigo, titulo, orden) values ('14', 'Futurity · Machos', 16);
 
+-- Caballos
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '1A'), 1, 'DONNA H.V.', '2025-08-16', 'TORDA', 'MAGIC MAGNIFIQUE', 'AFRODITA E.A.', 'VACOR ARABIANS', 'VACOR ARABIANS', NULL);
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '1A'), 2, 'ALIRA DE CARO', '2025-06-05', 'ALAZANA', 'IE OTHAR', 'TRIANA DE LUC', 'CARO ARABIANS', 'CARO ARABIANS', NULL);
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '1A'), 3, 'MZ SHAMS', '2025-05-22', 'TORDA', 'ZEUS EA', 'STARBOARD BOW', 'MARTA ZEA', 'ZEA ARABIANS', NULL);
@@ -71,3 +73,19 @@ insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, m
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '12'), 51, 'LANCEADOR*', '2011-04-10', 'ALAZAN', 'ECLIPSE', 'UKOLA', 'YEGUADA DOMECQ YBARRA', 'YEGUADA ARCOS ARABIANS', 'Pure Spainsh');
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '13'), 52, 'SG UGANDA', '2026-05-18', 'CASTAÑA', 'SA FALCO', 'SG ONZA', 'YEGUADA SIERRA GORDA', 'YEGUADA SIERRA GORDA', NULL);
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '14'), 53, 'GHAZAL GA', '2026-04-30', 'CASTAÑO', 'JYAR MEIA LUA', 'AL-QAHIRA GA', 'ANTONIO GONZALEZ', 'YEGUADA GONZALEZ', NULL);
+
+-- Campeonatos
+insert into campeonatos (codigo, titulo, orden, clases) values ('potras-yearling', 'Campeonato Potras Yearling', 1, '["1A", "1B"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('potras-junior', 'Campeonato Potras Junior', 2, '["3", "4"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('potros-yearling', 'Campeonato Potros Yearling', 3, '["2A", "2B"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('potros-junior', 'Campeonato Potros Junior', 4, '["5", "6"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('yeguas', 'Campeonato de Yeguas', 5, '["7", "8", "9"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('sementales', 'Campeonato de Sementales', 6, '["10", "11", "12"]'::jsonb);
+
+-- Trofeos
+insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-cabeza', 'Mejor Cabeza', 1, 'animal');
+insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-movimiento', 'Mejor Movimiento', 2, 'animal');
+insert into trofeos (codigo, titulo, orden, tipo) values ('prueba-libertad', 'Prueba de Libertad', 3, 'animal');
+insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-presentador', 'Mejor Presentador', 4, 'texto');
+insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-puntuacion', 'Mejor Puntuación (Best Show)', 5, 'animal');
+insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-pure-spanish', 'Mejor Pure Spanish', 6, 'animal');

@@ -64,15 +64,24 @@ edición real.
   el panel que aparece al final de la portada cuando entras como
   organización.
 - **Cada clase** tiene dos pestañas:
-  - **Orden de salida**: fijo, viene del Excel (número de dorsal).
-  - **Clasificación**: cada caballo tiene una hoja igual que la de papel,
-    con las 5 notas de cada juez (T, CyC, C, E, M). La web suma
-    automáticamente el total de cada juez, y calcula el total final como
-    la media de los dos. El **puesto (1º, 2º, 3º...) lo decides tú a mano**
-    con las flechas ↑ ↓ — no hay fórmula automática para el orden, así que
-    los empates o casos especiales los resuelves tú. Mientras no fijes un
-    puesto, se muestran ordenados por puntuación total como referencia
-    (marcados con un asterisco).
+  - **Orden de salida**: la hoja de trabajo, por dorsal. Aquí es donde tú
+    escribes las 10 notas de cada caballo (T, CyC, C, E, M de cada uno de
+    los 2 jueces), igual que en la hoja de papel. La web suma el total de
+    cada juez y calcula la media de los dos automáticamente. Se ve igual
+    para ti y para el público — mientras no rellenes las casillas, se ven
+    en blanco.
+  - **Clasificación**: el resultado limpio. Solo aparecen aquí los
+    caballos que ya tienen alguna nota puesta — nombre, puntuación total,
+    y una casilla donde escribes tú el puesto (1º, 2º, 3º...). No hay
+    fórmula automática para el puesto: lo decides tú a mano (así los
+    empates o casos especiales los resuelves tú), y mientras no pongas un
+    número se muestran ordenados por puntuación como referencia. Cada
+    caballo tiene un botón "Ver notas" para desplegar el detalle completo
+    si hace falta consultarlo.
+  - Cada clase tiene un interruptor **"Publicar esta clasificación"** en
+    la pestaña Clasificación — así puedes ir anotando notas en Orden de
+    salida con tranquilidad, y solo cuando decidas el orden final,
+    publicas la Clasificación para que la vea todo el mundo.
   - Cada clase tiene un interruptor **"Publicar esta clasificación"** — así
     puedes ir rellenando resultados sin que se vean hasta que estén
     confirmados, y publicarlos con un clic cuando termine la clase.
