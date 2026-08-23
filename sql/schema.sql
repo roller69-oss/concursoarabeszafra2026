@@ -37,6 +37,7 @@ create table if not exists caballos (
   capa text,
   padre text,
   madre text,
+  abuelo_materno text,
   criador text,
   propietario text,
   notas text,

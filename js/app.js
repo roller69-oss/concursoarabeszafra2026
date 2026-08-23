@@ -298,12 +298,6 @@ async function renderHome() {
     fetchEvento(), fetchClases(), fetchCampeonatos(), fetchTrofeos()
   ]);
 
-  const demoBanner = DEMO_MODE ? `
-    <div class="demo-banner">
-      Estás viendo datos de demostración (no editables). Conecta Supabase para gestionar el concurso real —
-      instrucciones en <a href="https://github.com" target="_blank" rel="noopener">README.md</a>.
-    </div>` : '';
-
   const cartel = evento.cartel_url ? `
     <div class="hero-cartel"><img src="${escapeHtml(evento.cartel_url)}" alt="Cartel del concurso"></div>` : '';
 
@@ -311,7 +305,6 @@ async function renderHome() {
   const colaboradores = (evento.colaboradores || []);
 
   app.innerHTML = `
-    ${demoBanner}
     <section class="hero">
       <div class="hero-eyebrow">Concurso morfológico</div>
       <h1>${escapeHtml(evento.titulo)}</h1>
@@ -601,7 +594,7 @@ function paintClase(clase, caballos) {
 
   const panel = document.getElementById('tab-panel');
   if (activeTab === 'salida') {
-    panel.innerHTML = tablaSalida(salida, admin);
+    panel.innerHTML = tablaSalida(salida, admin, clase.codigo);
     if (admin) wireOrdenSalidaAdmin(clase, salida, caballos);
   } else {
     panel.innerHTML = (admin ? adminBar(clase) : '') + tablaClasificacion(clasif, clase, admin);
@@ -612,8 +605,11 @@ function paintClase(clase, caballos) {
 // ------------------------------------------------------------
 // Pestaña: ORDEN DE SALIDA — la hoja de trabajo con las notas
 // ------------------------------------------------------------
-function tablaSalida(caballos, admin) {
+const CLASES_HEMBRA = ['1A', '1B', '3', '4', '7', '8', '9', '13'];
+
+function tablaSalida(caballos, admin, claseCodigo) {
   if (!caballos.length) return `<div class="empty-state"><strong>Sin inscripciones todavía</strong></div>`;
+  const esHembra = CLASES_HEMBRA.includes(claseCodigo);
   return `
     <div class="caballos-clasif">
       ${caballos.map(h => `
@@ -621,10 +617,12 @@ function tablaSalida(caballos, admin) {
           <div class="caballo-card-head">
             <div class="pos-block"><span class="dorsal-circle">${h.dorsal ?? '—'}</span></div>
             <div class="caballo-card-info">
-              <strong class="caballo-nombre">${escapeHtml(h.nombre)}</strong>
+              <strong class="caballo-nombre">${escapeHtml(h.nombre)}${h.capa ? ` <span class="caballo-capa">(${escapeHtml(h.capa)})</span>` : ''}</strong>
               <span class="caballo-sub">
-                ${fmtFecha(h.fecha_nacimiento)} · ${escapeHtml(h.capa || '—')}
-                ${h.criador || h.propietario ? ' · ' + escapeHtml(h.criador || h.propietario) : ''}
+                ${esHembra ? 'Hija' : 'Hijo'} de ${escapeHtml(h.padre || '—')} y ${escapeHtml(h.madre || '—')}${h.abuelo_materno ? ` por ${escapeHtml(h.abuelo_materno)}` : ''}
+              </span>
+              <span class="caballo-meta">
+                Nacimiento: ${fmtFecha(h.fecha_nacimiento)} · Criador: ${escapeHtml(h.criador || '—')} · Propietario: ${escapeHtml(h.propietario || '—')}
               </span>
             </div>
           </div>

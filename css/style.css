@@ -348,7 +348,9 @@ table.resultados tbody tr:hover{background:rgba(192,136,41,0.06);}
 .pos-num-public{
   background:var(--verde-900); color:var(--marfil-alta); border-radius:999px; padding:4px 10px; font-size:1rem;
 }
-.caballo-card-info{display:flex; flex-direction:column; gap:1px;}
+.caballo-card-info{display:flex; flex-direction:column; gap:3px;}
+.caballo-capa{font-weight:400; font-size:0.82rem; color:rgba(34,31,26,0.55);}
+.caballo-meta{font-size:0.78rem; color:rgba(34,31,26,0.5);}
 .dorsal-tag{font-family:var(--f-mono); font-size:0.72rem; color:rgba(34,31,26,0.55); text-transform:uppercase; letter-spacing:0.04em;}
 .caballo-nombre{font-family:var(--f-body); font-size:1.02rem; font-weight:700;}
 .caballo-sub{font-size:0.82rem; color:rgba(34,31,26,0.55);}
