@@ -45,12 +45,12 @@ create policy "admin escribe trofeos" on trofeos
 
 -- 2) Datos de los 6 campeonatos y 6 trofeos
 insert into campeonatos (codigo, titulo, orden, clases) values
-  ('potras-yearling', 'Campeonato Potras Yearling', 1, '["1A","1B"]'::jsonb),
-  ('potras-junior',   'Campeonato Potras Junior',   2, '["3","4"]'::jsonb),
-  ('potros-yearling', 'Campeonato Potros Yearling', 3, '["2A","2B"]'::jsonb),
-  ('potros-junior',   'Campeonato Potros Junior',   4, '["5","6"]'::jsonb),
-  ('yeguas',          'Campeonato de Yeguas',       5, '["7","8","9"]'::jsonb),
-  ('sementales',      'Campeonato de Sementales',   6, '["10","11","12"]'::jsonb)
+  ('potras-yearling', 'Potras Yearling', 1, '["1A","1B"]'::jsonb),
+  ('potras-junior',   'Potras Junior',   2, '["3","4"]'::jsonb),
+  ('potros-yearling', 'Potros Yearling', 3, '["2A","2B"]'::jsonb),
+  ('potros-junior',   'Potros Junior',   4, '["5","6"]'::jsonb),
+  ('yeguas',          'Yeguas',       5, '["7","8","9"]'::jsonb),
+  ('sementales',      'Sementales',   6, '["10","11","12"]'::jsonb)
 on conflict (codigo) do nothing;
 
 insert into trofeos (codigo, titulo, orden, tipo) values

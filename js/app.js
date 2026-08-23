@@ -56,6 +56,14 @@ function fmtNum(n) {
   return Number.isInteger(num) ? String(num) : num.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
+function tituloConLineas(titulo) {
+  return titulo.split('|').map(l => escapeHtml(l.trim())).join('<br>');
+}
+
+function tituloPlano(titulo) {
+  return escapeHtml(titulo.split('|').map(l => l.trim()).join(' · '));
+}
+
 function ordinal(n) {
   if (n === null || n === undefined) return '—';
   return `${n}º`;
@@ -337,7 +345,7 @@ async function renderHome() {
       ${clases.map(c => `
         <a class="clase-card" href="#/clase/${encodeURIComponent(c.codigo)}">
           <span class="publicada" ${c.clasificacion_publicada ? '' : 'hidden'} title="Clasificación publicada"></span>
-          <span class="titulo">${escapeHtml(c.titulo)}</span>
+          <span class="titulo">${tituloConLineas(c.titulo)}</span>
         </a>
       `).join('')}
     </div>
@@ -571,7 +579,7 @@ function paintClase(clase, caballos) {
     <div class="clase-header">
       <div>
         <h1>Clase ${escapeHtml(clase.codigo)}</h1>
-        <span class="titulo-clase">${escapeHtml(clase.titulo)}</span>
+        <span class="titulo-clase">${tituloPlano(clase.titulo)}</span>
       </div>
       <span class="badge">${caballos.length} caballos</span>
     </div>

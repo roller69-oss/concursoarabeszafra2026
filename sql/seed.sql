@@ -2,22 +2,22 @@
 -- Generado automáticamente a partir del Excel de inscripciones
 
 -- Clases
-insert into clases (codigo, titulo, orden) values ('1A', '1 Año · Hembras A', 1);
-insert into clases (codigo, titulo, orden) values ('1B', '1 Año · Hembras B', 2);
-insert into clases (codigo, titulo, orden) values ('2A', '1 Año · Machos A', 3);
-insert into clases (codigo, titulo, orden) values ('2B', '1 Año · Machos B', 4);
-insert into clases (codigo, titulo, orden) values ('3', '2 Años · Hembras', 5);
-insert into clases (codigo, titulo, orden) values ('4', '3 Años · Hembras', 6);
-insert into clases (codigo, titulo, orden) values ('5', '2 Años · Machos', 7);
-insert into clases (codigo, titulo, orden) values ('6', '3 Años · Machos', 8);
-insert into clases (codigo, titulo, orden) values ('7', 'Yeguas de 4 a 6 años', 9);
-insert into clases (codigo, titulo, orden) values ('8', 'Yeguas de 7 a 10 años', 10);
-insert into clases (codigo, titulo, orden) values ('9', 'Yeguas de 11 años en adelante', 11);
-insert into clases (codigo, titulo, orden) values ('10', 'Sementales de 4 a 6 años', 12);
-insert into clases (codigo, titulo, orden) values ('11', 'Sementales de 7 a 10 años', 13);
-insert into clases (codigo, titulo, orden) values ('12', 'Sementales de 11 años en adelante', 14);
-insert into clases (codigo, titulo, orden) values ('13', 'Futurity · Hembras', 15);
-insert into clases (codigo, titulo, orden) values ('14', 'Futurity · Machos', 16);
+insert into clases (codigo, titulo, orden) values ('1A', 'Potras 1 Año|1A', 1);
+insert into clases (codigo, titulo, orden) values ('1B', 'Potras 1 Año|1B', 2);
+insert into clases (codigo, titulo, orden) values ('2A', 'Potros 1 Año|2A', 3);
+insert into clases (codigo, titulo, orden) values ('2B', 'Potros 1 Año|2B', 4);
+insert into clases (codigo, titulo, orden) values ('3', 'Potras|2 Años', 5);
+insert into clases (codigo, titulo, orden) values ('4', 'Potras|3 Años', 6);
+insert into clases (codigo, titulo, orden) values ('5', 'Potros|2 Años', 7);
+insert into clases (codigo, titulo, orden) values ('6', 'Potros|3 Años', 8);
+insert into clases (codigo, titulo, orden) values ('7', 'Yeguas|4 - 6 Años', 9);
+insert into clases (codigo, titulo, orden) values ('8', 'Yeguas|7 - 11 Años', 10);
+insert into clases (codigo, titulo, orden) values ('9', 'Yeguas|Más 11 Años', 11);
+insert into clases (codigo, titulo, orden) values ('10', 'Sementales|4 - 6 Años', 12);
+insert into clases (codigo, titulo, orden) values ('11', 'Sementales|7 - 11 Años', 13);
+insert into clases (codigo, titulo, orden) values ('12', 'Sementales|Más 11 Años', 14);
+insert into clases (codigo, titulo, orden) values ('13', 'Futurity|Hembra', 15);
+insert into clases (codigo, titulo, orden) values ('14', 'Futurity|Macho', 16);
 
 -- Caballos
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '1A'), 1, 'DONNA H.V.', '2025-08-16', 'TORDA', 'MAGIC MAGNIFIQUE', 'AFRODITA E.A.', 'VACOR ARABIANS', 'VACOR ARABIANS', NULL);
@@ -75,12 +75,12 @@ insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, m
 insert into caballos (clase_id, dorsal, nombre, fecha_nacimiento, capa, padre, madre, criador, propietario, notas) values ((select id from clases where codigo = '14'), 53, 'GHAZAL GA', '2026-04-30', 'CASTAÑO', 'JYAR MEIA LUA', 'AL-QAHIRA GA', 'ANTONIO GONZALEZ', 'YEGUADA GONZALEZ', NULL);
 
 -- Campeonatos
-insert into campeonatos (codigo, titulo, orden, clases) values ('potras-yearling', 'Campeonato Potras Yearling', 1, '["1A", "1B"]'::jsonb);
-insert into campeonatos (codigo, titulo, orden, clases) values ('potras-junior', 'Campeonato Potras Junior', 2, '["3", "4"]'::jsonb);
-insert into campeonatos (codigo, titulo, orden, clases) values ('potros-yearling', 'Campeonato Potros Yearling', 3, '["2A", "2B"]'::jsonb);
-insert into campeonatos (codigo, titulo, orden, clases) values ('potros-junior', 'Campeonato Potros Junior', 4, '["5", "6"]'::jsonb);
-insert into campeonatos (codigo, titulo, orden, clases) values ('yeguas', 'Campeonato de Yeguas', 5, '["7", "8", "9"]'::jsonb);
-insert into campeonatos (codigo, titulo, orden, clases) values ('sementales', 'Campeonato de Sementales', 6, '["10", "11", "12"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('potras-yearling', 'Potras Yearling', 1, '["1A", "1B"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('potras-junior', 'Potras Junior', 2, '["3", "4"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('potros-yearling', 'Potros Yearling', 3, '["2A", "2B"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('potros-junior', 'Potros Junior', 4, '["5", "6"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('yeguas', 'Yeguas', 5, '["7", "8", "9"]'::jsonb);
+insert into campeonatos (codigo, titulo, orden, clases) values ('sementales', 'Sementales', 6, '["10", "11", "12"]'::jsonb);
 
 -- Trofeos
 insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-cabeza', 'Mejor Cabeza', 1, 'animal');

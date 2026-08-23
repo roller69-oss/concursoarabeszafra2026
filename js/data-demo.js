@@ -1,7 +1,7 @@
 window.DEMO_CLASES = [
   {
     "codigo": "1A",
-    "titulo": "1 Año · Hembras A",
+    "titulo": "Potras 1 Año|1A",
     "orden": 1,
     "clasificacion_publicada": false,
     "caballos": [
@@ -101,7 +101,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "1B",
-    "titulo": "1 Año · Hembras B",
+    "titulo": "Potras 1 Año|1B",
     "orden": 2,
     "clasificacion_publicada": false,
     "caballos": [
@@ -178,7 +178,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "2A",
-    "titulo": "1 Año · Machos A",
+    "titulo": "Potros 1 Año|2A",
     "orden": 3,
     "clasificacion_publicada": false,
     "caballos": [
@@ -278,7 +278,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "2B",
-    "titulo": "1 Año · Machos B",
+    "titulo": "Potros 1 Año|2B",
     "orden": 4,
     "clasificacion_publicada": false,
     "caballos": [
@@ -355,7 +355,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "3",
-    "titulo": "2 Años · Hembras",
+    "titulo": "Potras|2 Años",
     "orden": 5,
     "clasificacion_publicada": false,
     "caballos": [
@@ -478,7 +478,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "4",
-    "titulo": "3 Años · Hembras",
+    "titulo": "Potras|3 Años",
     "orden": 6,
     "clasificacion_publicada": false,
     "caballos": [
@@ -601,7 +601,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "5",
-    "titulo": "2 Años · Machos",
+    "titulo": "Potros|2 Años",
     "orden": 7,
     "clasificacion_publicada": false,
     "caballos": [
@@ -724,7 +724,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "6",
-    "titulo": "3 Años · Machos",
+    "titulo": "Potros|3 Años",
     "orden": 8,
     "clasificacion_publicada": false,
     "caballos": [
@@ -778,7 +778,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "7",
-    "titulo": "Yeguas de 4 a 6 años",
+    "titulo": "Yeguas|4 - 6 Años",
     "orden": 9,
     "clasificacion_publicada": false,
     "caballos": [
@@ -878,7 +878,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "8",
-    "titulo": "Yeguas de 7 a 10 años",
+    "titulo": "Yeguas|7 - 11 Años",
     "orden": 10,
     "clasificacion_publicada": false,
     "caballos": [
@@ -1001,7 +1001,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "9",
-    "titulo": "Yeguas de 11 años en adelante",
+    "titulo": "Yeguas|Más 11 Años",
     "orden": 11,
     "clasificacion_publicada": false,
     "caballos": [
@@ -1032,7 +1032,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "10",
-    "titulo": "Sementales de 4 a 6 años",
+    "titulo": "Sementales|4 - 6 Años",
     "orden": 12,
     "clasificacion_publicada": false,
     "caballos": [
@@ -1132,7 +1132,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "11",
-    "titulo": "Sementales de 7 a 10 años",
+    "titulo": "Sementales|7 - 11 Años",
     "orden": 13,
     "clasificacion_publicada": false,
     "caballos": [
@@ -1232,7 +1232,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "12",
-    "titulo": "Sementales de 11 años en adelante",
+    "titulo": "Sementales|Más 11 Años",
     "orden": 14,
     "clasificacion_publicada": false,
     "caballos": [
@@ -1286,7 +1286,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "13",
-    "titulo": "Futurity · Hembras",
+    "titulo": "Futurity|Hembra",
     "orden": 15,
     "clasificacion_publicada": false,
     "caballos": [
@@ -1317,7 +1317,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "14",
-    "titulo": "Futurity · Machos",
+    "titulo": "Futurity|Macho",
     "orden": 16,
     "clasificacion_publicada": false,
     "caballos": [
@@ -1351,7 +1351,7 @@ window.DEMO_CLASES = [
 window.DEMO_CAMPEONATOS = [
   {
     "codigo": "potras-yearling",
-    "titulo": "Campeonato Potras Yearling",
+    "titulo": "Potras Yearling",
     "orden": 1,
     "clases": [
       "1A",
@@ -1364,7 +1364,7 @@ window.DEMO_CAMPEONATOS = [
   },
   {
     "codigo": "potras-junior",
-    "titulo": "Campeonato Potras Junior",
+    "titulo": "Potras Junior",
     "orden": 2,
     "clases": [
       "3",
@@ -1377,7 +1377,7 @@ window.DEMO_CAMPEONATOS = [
   },
   {
     "codigo": "potros-yearling",
-    "titulo": "Campeonato Potros Yearling",
+    "titulo": "Potros Yearling",
     "orden": 3,
     "clases": [
       "2A",
@@ -1390,7 +1390,7 @@ window.DEMO_CAMPEONATOS = [
   },
   {
     "codigo": "potros-junior",
-    "titulo": "Campeonato Potros Junior",
+    "titulo": "Potros Junior",
     "orden": 4,
     "clases": [
       "5",
@@ -1403,7 +1403,7 @@ window.DEMO_CAMPEONATOS = [
   },
   {
     "codigo": "yeguas",
-    "titulo": "Campeonato de Yeguas",
+    "titulo": "Yeguas",
     "orden": 5,
     "clases": [
       "7",
@@ -1417,7 +1417,7 @@ window.DEMO_CAMPEONATOS = [
   },
   {
     "codigo": "sementales",
-    "titulo": "Campeonato de Sementales",
+    "titulo": "Sementales",
     "orden": 6,
     "clases": [
       "10",
