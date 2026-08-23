@@ -598,8 +598,20 @@ function paintClase(clase, caballos) {
     if (admin) wireOrdenSalidaAdmin(clase, salida, caballos);
   } else {
     panel.innerHTML = (admin ? adminBar(clase) : '') + tablaClasificacion(clasif, clase, admin);
+    wireVerNotas();
     if (admin) wireClasificacionAdmin(clase, clasif, caballos);
   }
+}
+
+function wireVerNotas() {
+  document.querySelectorAll('.btn-ver-notas').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = document.getElementById(`notas-${btn.dataset.toggle}`);
+      const abierto = !panel.hidden;
+      panel.hidden = abierto;
+      btn.textContent = abierto ? 'Ver notas' : 'Ocultar notas';
+    });
+  });
 }
 
 // ------------------------------------------------------------
@@ -893,15 +905,6 @@ function wireClasificacionAdmin(clase, clasif, todosCaballos) {
       setSaveStatus(status, 'Error al guardar', true);
       toggle.checked = !toggle.checked;
     }
-  });
-
-  document.querySelectorAll('.btn-ver-notas').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const panel = document.getElementById(`notas-${btn.dataset.toggle}`);
-      const abierto = !panel.hidden;
-      panel.hidden = abierto;
-      btn.textContent = abierto ? 'Ver notas' : 'Ocultar notas';
-    });
   });
 
   const guardarBtn = document.getElementById('guardar-clasificacion');
