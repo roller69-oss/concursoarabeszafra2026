@@ -251,6 +251,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function currentRoute() {
   const hash = location.hash.replace(/^#\/?/, '');
   if (!hash) return { name: 'home' };
+  if (['clases', 'campeonatos', 'trofeos'].includes(hash)) return { name: 'home', scrollTo: hash };
   const [seg, param] = hash.split('/');
   if (seg === 'clase' && param) return { name: 'clase', codigo: decodeURIComponent(param) };
   if (seg === 'campeonato' && param) return { name: 'campeonato', codigo: decodeURIComponent(param) };
@@ -259,6 +260,8 @@ function currentRoute() {
 
 async function render() {
   const route = currentRoute();
+  const quicknav = document.querySelector('.quicknav');
+  if (quicknav) quicknav.hidden = route.name !== 'home';
   try {
     if (route.name === 'clase') {
       await renderClase(route.codigo);
@@ -270,6 +273,10 @@ async function render() {
   } catch (err) {
     console.error(err);
     app.innerHTML = `<div class="empty-state"><strong>No se pudieron cargar los datos.</strong>${escapeHtml(err.message || err)}</div>`;
+  }
+  if (route.scrollTo) {
+    const el = document.getElementById(route.scrollTo);
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
   }
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
@@ -322,7 +329,7 @@ async function renderHome() {
       <div class="logo-row">${logoRow(patrocinadores)}</div>
     </section>` : ''}
 
-    <div class="section-title">
+    <div class="section-title" id="clases">
       <h2>Clases del concurso</h2>
       <span class="count">${clases.length} clases</span>
     </div>
@@ -335,7 +342,7 @@ async function renderHome() {
       `).join('')}
     </div>
 
-    <div class="section-title">
+    <div class="section-title" id="campeonatos">
       <h2>Campeonatos</h2>
       <span class="count">${campeonatos.length}</span>
     </div>
@@ -349,7 +356,7 @@ async function renderHome() {
       `).join('')}
     </div>
 
-    <div class="section-title">
+    <div class="section-title" id="trofeos">
       <h2>Trofeos</h2>
       <span class="count">${trofeos.length}</span>
     </div>
