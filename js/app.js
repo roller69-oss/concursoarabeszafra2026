@@ -328,15 +328,7 @@ async function renderHome() {
 
   app.innerHTML = `
     <section class="hero">
-      <div class="hero-eyebrow">Concurso morfológico</div>
-      <h1>${escapeHtml(evento.titulo)}</h1>
-      <div class="subtitulo">${escapeHtml(evento.subtitulo || '')}</div>
-      <div class="hero-meta">
-        ${evento.lugar ? `<span>📍 ${escapeHtml(evento.lugar)}</span>` : ''}
-        ${evento.fechas ? `<span>🗓 ${escapeHtml(evento.fechas)}</span>` : ''}
-        <span>🐎 ${clases.length} clases</span>
-      </div>
-      ${evento.descripcion ? `<p class="hero-desc">${escapeHtml(evento.descripcion)}</p>` : ''}
+      <h1 class="sr-only">${escapeHtml(evento.titulo)}</h1>
       ${cartel}
     </section>
 
