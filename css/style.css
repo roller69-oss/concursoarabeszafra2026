@@ -267,6 +267,25 @@ h1,h2,h3{font-family:var(--f-display); margin:0; font-weight:600; letter-spacing
 .podio-caballo em{color:rgba(34,31,26,0.5); font-style:normal; font-weight:400;}
 .podio-select{width:100%; padding:9px 10px; border:1px solid var(--linea); border-radius:8px; font-size:0.9rem;}
 
+/* ------- Sorteo ------- */
+.sorteo-card{
+  display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+  background:var(--marfil-alta); border:1px solid var(--linea); border-radius:20px;
+  padding:26px 28px; margin-bottom:16px;
+}
+.bombo{position:relative; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  animation:bombo-gira 8s linear infinite;
+}
+@keyframes bombo-gira{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+.bombo-emoji{position:absolute; font-size:1.7rem; animation:bombo-contragira 8s linear infinite;}
+@keyframes bombo-contragira{ from{transform:rotate(0deg);} to{transform:rotate(-360deg);} }
+.sorteo-info h3{font-size:1.2rem; color:var(--verde-900); margin-bottom:6px;}
+.sorteo-info p{margin:0 0 10px; color:rgba(34,31,26,0.7); font-size:0.94rem; max-width:520px;}
+.sorteo-ganador{
+  font-family:var(--f-mono); font-size:1.05rem; color:var(--granate); font-weight:700;
+}
+.sorteo-pendiente{font-family:var(--f-mono); font-size:0.88rem; color:rgba(34,31,26,0.5);}
+
 /* ============================================================
    VISTA DE CLASE
    ============================================================ */
@@ -348,9 +367,21 @@ table.resultados tbody tr:hover{background:rgba(192,136,41,0.06);}
 .pos-num-public{
   background:var(--verde-900); color:var(--marfil-alta); border-radius:999px; padding:4px 10px; font-size:1rem;
 }
-.caballo-card-info{display:flex; flex-direction:column; gap:3px;}
+.caballo-card-info{display:flex; flex-direction:column; gap:3px; flex:1;}
 .caballo-capa{font-weight:400; font-size:0.82rem; color:rgba(34,31,26,0.55);}
 .caballo-meta{font-size:0.78rem; color:rgba(34,31,26,0.5);}
+
+.caballo-card.caballo-no-presentado{opacity:0.7; background:repeating-linear-gradient(135deg, var(--marfil-alta), var(--marfil-alta) 12px, rgba(110,42,42,0.05) 12px, rgba(110,42,42,0.05) 24px);}
+.caballo-no-presentado .caballo-nombre, .caballo-no-presentado .caballo-sub{text-decoration:line-through; text-decoration-color:var(--granate); text-decoration-thickness:2px;}
+.chk-no-presentado-label{
+  display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--granate);
+  white-space:nowrap; cursor:pointer; margin-left:auto; align-self:flex-start;
+}
+.badge-no-presentado{
+  background:var(--granate); color:var(--marfil-alta); font-size:0.72rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.04em; padding:4px 10px; border-radius:999px;
+  margin-left:auto; align-self:flex-start; white-space:nowrap;
+}
 .dorsal-tag{font-family:var(--f-mono); font-size:0.72rem; color:rgba(34,31,26,0.55); text-transform:uppercase; letter-spacing:0.04em;}
 .caballo-nombre{font-family:var(--f-body); font-size:1.02rem; font-weight:700;}
 .caballo-sub{font-size:0.82rem; color:rgba(34,31,26,0.55);}

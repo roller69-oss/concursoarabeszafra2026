@@ -127,12 +127,20 @@ async function fetchTodosCaballos() {
     });
     return out;
   }
-  const { data, error } = await supa
-    .from('caballos')
-    .select('id, nombre, dorsal, posicion, clases(codigo, titulo)')
-    .order('nombre', { ascending: true });
-  if (error) throw error;
-  return data.map(r => ({ id: r.id, nombre: r.nombre, dorsal: r.dorsal, posicion: r.posicion, clase_codigo: r.clases?.codigo, clase_titulo: r.clases?.titulo }));
+  const [caballosRes, clases] = await Promise.all([
+    supa.from('caballos').select('id, nombre, dorsal, posicion, clase_id, clases(codigo, titulo)'),
+    fetchClases()
+  ]);
+  if (caballosRes.error) throw caballosRes.error;
+  const ordenPorClaseId = {};
+  clases.forEach(c => { ordenPorClaseId[c.id] = c.orden; });
+  const out = caballosRes.data.map(r => ({
+    id: r.id, nombre: r.nombre, dorsal: r.dorsal, posicion: r.posicion,
+    clase_codigo: r.clases?.codigo, clase_titulo: r.clases?.titulo,
+    _orden: ordenPorClaseId[r.clase_id] ?? 999
+  }));
+  out.sort((a, b) => (a._orden - b._orden) || ((a.dorsal ?? 0) - (b.dorsal ?? 0)));
+  return out;
 }
 
 async function fetchCampeonatos() {
@@ -165,6 +173,19 @@ async function fetchTrofeos() {
 async function guardarTrofeo(id, cambios) {
   if (DEMO_MODE) return;
   const { error } = await supa.from('trofeos').update(cambios).eq('id', id);
+  if (error) throw error;
+}
+
+async function fetchSorteo() {
+  if (DEMO_MODE) return window.DEMO_SORTEO;
+  const { data, error } = await supa.from('sorteo').select('*').eq('id', 1).single();
+  if (error) throw error;
+  return data;
+}
+
+async function guardarSorteo(cambios) {
+  if (DEMO_MODE) return;
+  const { error } = await supa.from('sorteo').update(cambios).eq('id', 1);
   if (error) throw error;
 }
 
@@ -259,7 +280,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function currentRoute() {
   const hash = location.hash.replace(/^#\/?/, '');
   if (!hash) return { name: 'home' };
-  if (['clases', 'campeonatos', 'trofeos'].includes(hash)) return { name: 'home', scrollTo: hash };
+  if (['clases', 'campeonatos', 'trofeos', 'sorteo'].includes(hash)) return { name: 'home', scrollTo: hash };
   const [seg, param] = hash.split('/');
   if (seg === 'clase' && param) return { name: 'clase', codigo: decodeURIComponent(param) };
   if (seg === 'campeonato' && param) return { name: 'campeonato', codigo: decodeURIComponent(param) };
@@ -294,12 +315,13 @@ async function render() {
 // ------------------------------------------------------------
 async function renderHome() {
   app.innerHTML = `<p class="muted" style="padding:60px 0;text-align:center;">Cargando…</p>`;
-  const [evento, clases, campeonatos, trofeos] = await Promise.all([
-    fetchEvento(), fetchClases(), fetchCampeonatos(), fetchTrofeos()
+  const [evento, clases, campeonatos, trofeos, sorteo] = await Promise.all([
+    fetchEvento(), fetchClases(), fetchCampeonatos(), fetchTrofeos(), fetchSorteo()
   ]);
 
-  const cartel = evento.cartel_url ? `
-    <div class="hero-cartel"><img src="${escapeHtml(evento.cartel_url)}" alt="Cartel del concurso"></div>` : '';
+  const urlCartel = evento.cartel_url || 'assets/cartel.jpg';
+  const cartel = `
+    <div class="hero-cartel"><img src="${escapeHtml(urlCartel)}" alt="Cartel del concurso" onerror="this.closest('.hero-cartel').remove()"></div>`;
 
   const patrocinadores = (evento.patrocinadores || []);
   const colaboradores = (evento.colaboradores || []);
@@ -363,13 +385,20 @@ async function renderHome() {
     </div>
     <div id="trofeos-section"></div>
 
+    <div class="section-title" id="sorteo">
+      <h2>Sorteo</h2>
+    </div>
+    <div id="sorteo-section"></div>
+
     ${isAdmin() ? renderAdminEventoPanel(evento) : ''}
   `;
 
   await renderTrofeos(trofeos);
+  renderSorteo(sorteo);
   if (isAdmin()) {
     wireAdminEventoPanel(evento);
     wireTrofeosAdmin(trofeos);
+    wireSorteoAdmin(sorteo);
   }
 }
 
@@ -472,6 +501,76 @@ function wireTrofeosAdmin(trofeos) {
   });
 }
 
+// ------------------------------------------------------------
+// Sorteo (en la portada)
+// ------------------------------------------------------------
+function renderSorteo(sorteo) {
+  const cont = document.getElementById('sorteo-section');
+  if (!cont) return;
+  const admin = isAdmin();
+  const ganador = sorteo.ganador && sorteo.ganador.trim();
+
+  cont.innerHTML = `
+    <div class="sorteo-card">
+      <div class="bombo" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="88" height="88">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--oro)" stroke-width="4"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--verde-900)" stroke-width="2" stroke-dasharray="4 6"/>
+          <line x1="60" y1="8" x2="60" y2="112" stroke="var(--oro)" stroke-width="2" opacity="0.5"/>
+          <line x1="8" y1="60" x2="112" y2="60" stroke="var(--oro)" stroke-width="2" opacity="0.5"/>
+          <circle cx="60" cy="60" r="10" fill="var(--granate)"/>
+        </svg>
+        <span class="bombo-emoji">🍖</span>
+      </div>
+      <div class="sorteo-info">
+        <h3>${escapeHtml(sorteo.premio || 'Jamón')}</h3>
+        <p>${escapeHtml(sorteo.descripcion || '')}</p>
+        ${ganador
+          ? `<div class="sorteo-ganador">🎉 Ganador: <strong>${escapeHtml(ganador)}</strong></div>`
+          : `<div class="sorteo-pendiente">Aún no se ha realizado el sorteo</div>`}
+      </div>
+    </div>
+    ${admin ? `
+      <div class="admin-panel" id="sorteo-admin">
+        <h3>Editar sorteo (solo organización)</h3>
+        <div class="field"><label>Premio</label><input id="sorteo-premio" value="${escapeHtml(sorteo.premio || '')}"></div>
+        <div class="field"><label>Descripción</label><textarea id="sorteo-descripcion">${escapeHtml(sorteo.descripcion || '')}</textarea></div>
+        <div class="field"><label>Nombre del ganador (déjalo vacío hasta que se celebre el sorteo)</label><input id="sorteo-ganador" value="${escapeHtml(sorteo.ganador || '')}" placeholder="Se rellena el día del sorteo"></div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn-primary" id="sorteo-guardar">Guardar sorteo</button>
+          <span class="save-status" id="sorteo-status"></span>
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+function wireSorteoAdmin(sorteo) {
+  const btn = document.getElementById('sorteo-guardar');
+  if (!btn) return;
+  const status = document.getElementById('sorteo-status');
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const cambios = {
+        premio: document.getElementById('sorteo-premio').value.trim(),
+        descripcion: document.getElementById('sorteo-descripcion').value.trim(),
+        ganador: document.getElementById('sorteo-ganador').value.trim() || null,
+      };
+      await guardarSorteo(cambios);
+      Object.assign(sorteo, cambios);
+      setSaveStatus(status, 'Guardado ✓', false);
+      renderSorteo(sorteo);
+      wireSorteoAdmin(sorteo);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus(status, 'Error al guardar', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
 function logoRow(items) {
   return items.map(it => {
     if (it.logo_url) {
@@ -559,7 +658,7 @@ function paintClase(clase, caballos) {
   const admin = isAdmin();
   const salida = [...caballos].sort((a, b) => (a.dorsal ?? 999) - (b.dorsal ?? 999));
   const clasif = caballos
-    .filter(h => totalFinal(h) != null)
+    .filter(h => !h.no_presentado && totalFinal(h) != null)
     .sort((a, b) => {
       if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
       if (a.posicion != null) return -1;
@@ -625,7 +724,7 @@ function tablaSalida(caballos, admin, claseCodigo) {
   return `
     <div class="caballos-clasif">
       ${caballos.map(h => `
-        <div class="caballo-card" data-id="${h.id}">
+        <div class="caballo-card ${h.no_presentado ? 'caballo-no-presentado' : ''}" data-id="${h.id}">
           <div class="caballo-card-head">
             <div class="pos-block"><span class="dorsal-circle">${h.dorsal ?? '—'}</span></div>
             <div class="caballo-card-info">
@@ -637,6 +736,9 @@ function tablaSalida(caballos, admin, claseCodigo) {
                 Nacimiento: ${fmtFecha(h.fecha_nacimiento)} · Criador: ${escapeHtml(h.criador || '—')} · Propietario: ${escapeHtml(h.propietario || '—')}
               </span>
             </div>
+            ${admin
+              ? `<label class="chk-no-presentado-label"><input type="checkbox" class="chk-no-presentado" data-id="${h.id}" ${h.no_presentado ? 'checked' : ''}> No presentado</label>`
+              : (h.no_presentado ? `<span class="badge-no-presentado">No presentado</span>` : '')}
           </div>
           ${scoreTable(h, admin)}
         </div>
@@ -669,6 +771,23 @@ function recalcularTarjeta(card) {
 function wireOrdenSalidaAdmin(clase, salida, todosCaballos) {
   document.querySelectorAll('.score-input').forEach(inp => {
     inp.addEventListener('input', () => recalcularTarjeta(inp.closest('.caballo-card')));
+  });
+
+  document.querySelectorAll('.chk-no-presentado').forEach(chk => {
+    chk.addEventListener('change', async () => {
+      const card = chk.closest('.caballo-card');
+      card.classList.toggle('caballo-no-presentado', chk.checked);
+      try {
+        await guardarCaballo(chk.dataset.id, { no_presentado: chk.checked });
+        const h = todosCaballos.find(x => String(x.id) === chk.dataset.id);
+        if (h) h.no_presentado = chk.checked;
+      } catch (err) {
+        console.error(err);
+        chk.checked = !chk.checked;
+        card.classList.toggle('caballo-no-presentado', chk.checked);
+        alert('No se pudo guardar, inténtalo de nuevo.');
+      }
+    });
   });
 
   const guardarBtn = document.getElementById('guardar-salida');

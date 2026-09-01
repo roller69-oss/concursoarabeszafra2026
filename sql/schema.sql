@@ -44,8 +44,24 @@ create table if not exists caballos (
   -- Puntuaciones: 5 criterios (T, CyC, C, E, M) x 2 jueces, igual que la hoja en papel
   j1_t numeric(5,2), j1_cyc numeric(5,2), j1_c numeric(5,2), j1_e numeric(5,2), j1_m numeric(5,2),
   j2_t numeric(5,2), j2_cyc numeric(5,2), j2_c numeric(5,2), j2_e numeric(5,2), j2_m numeric(5,2),
-  posicion int                         -- clasificación final (la coloca el admin a mano)
+  posicion int,                        -- clasificación final (la coloca el admin a mano)
+  no_presentado boolean not null default false
 );
+
+-- 6) Sorteo (ej. jamón entre los participantes)
+create table if not exists sorteo (
+  id int primary key default 1,
+  premio text not null default 'Jamón',
+  descripcion text not null default 'A lo largo del concurso se realizará un sorteo entre todos los participantes.',
+  ganador text,
+  constraint sorteo_single_row check (id = 1)
+);
+insert into sorteo (id) values (1) on conflict (id) do nothing;
+
+alter table sorteo enable row level security;
+create policy "lectura publica sorteo" on sorteo for select using (true);
+create policy "admin escribe sorteo" on sorteo
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
 create index if not exists idx_caballos_clase on caballos(clase_id);
 

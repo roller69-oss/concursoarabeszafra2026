@@ -1486,3 +1486,10 @@ window.DEMO_TROFEOS = [
     "ganador_texto": null
   }
 ];
+
+window.DEMO_SORTEO = {
+  id: 1,
+  premio: 'Jamón',
+  descripcion: 'A lo largo del concurso se realizará un sorteo entre todos los participantes.',
+  ganador: null
+};

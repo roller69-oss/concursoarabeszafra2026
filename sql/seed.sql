@@ -87,3 +87,6 @@ insert into trofeos (codigo, titulo, orden, tipo) values ('prueba-libertad', 'Pr
 insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-presentador', 'Mejor Presentador', 4, 'texto');
 insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-puntuacion', 'Mejor Puntuación (Best Show)', 5, 'animal');
 insert into trofeos (codigo, titulo, orden, tipo) values ('mejor-pure-spanish', 'Mejor Pure Spanish', 6, 'animal');
+
+-- Sorteo
+insert into sorteo (id) values (1) on conflict (id) do nothing;
