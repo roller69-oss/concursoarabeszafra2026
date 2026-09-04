@@ -531,14 +531,15 @@ function renderSorteo(sorteo) {
   cont.innerHTML = `
     <div class="sorteo-card">
       <div class="bombo" aria-hidden="true">
-        <svg viewBox="0 0 120 120" width="88" height="88">
-          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--oro)" stroke-width="4"/>
-          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--verde-900)" stroke-width="2" stroke-dasharray="4 6"/>
-          <line x1="60" y1="8" x2="60" y2="112" stroke="var(--oro)" stroke-width="2" opacity="0.5"/>
-          <line x1="8" y1="60" x2="112" y2="60" stroke="var(--oro)" stroke-width="2" opacity="0.5"/>
-          <circle cx="60" cy="60" r="10" fill="var(--granate)"/>
+        <svg class="bombo-aro" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="58" fill="none" stroke="var(--oro)" stroke-width="4"/>
+          <circle cx="60" cy="60" r="58" fill="none" stroke="var(--verde-900)" stroke-width="2" stroke-dasharray="2 6"/>
+          <circle cx="60" cy="2" r="3" fill="var(--granate)"/>
+          <circle cx="60" cy="118" r="3" fill="var(--granate)"/>
+          <circle cx="2" cy="60" r="3" fill="var(--granate)"/>
+          <circle cx="118" cy="60" r="3" fill="var(--granate)"/>
         </svg>
-        <img class="bombo-icono" src="assets/jamon-icono.png" alt="">
+        <img class="bombo-imagen" src="assets/sorteo.jpg" alt="Sorteo de un jamón entre los participantes">
       </div>
       <div class="sorteo-info">
         <h3>${escapeHtml(sorteo.premio || 'Jamón')}</h3>

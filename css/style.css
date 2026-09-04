@@ -247,16 +247,18 @@ h1,h2,h3{font-family:var(--f-display); margin:0; font-weight:600; letter-spacing
   background:var(--marfil-alta); border:1px solid var(--linea); border-radius:20px;
   padding:26px 28px; margin-bottom:16px;
 }
-.bombo{position:relative; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
-  animation:bombo-gira 8s linear infinite;
+.bombo{
+  position:relative; flex:0 0 auto; width:96px; height:96px;
+}
+.bombo-aro{
+  position:absolute; inset:-14px; width:calc(100% + 28px); height:calc(100% + 28px);
+  animation:bombo-gira 12s linear infinite;
 }
 @keyframes bombo-gira{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-.bombo-icono{
-  position:absolute; width:38px; height:38px; border-radius:50%; object-fit:cover;
+.bombo-imagen{
+  position:absolute; inset:0; width:100%; height:100%; border-radius:50%; object-fit:cover;
   border:2px solid var(--marfil-alta); box-shadow:0 1px 4px rgba(0,0,0,0.25);
-  animation:bombo-contragira 8s linear infinite;
 }
-@keyframes bombo-contragira{ from{transform:rotate(0deg);} to{transform:rotate(-360deg);} }
 .sorteo-info h3{font-size:1.2rem; color:var(--verde-900); margin-bottom:6px;}
 .sorteo-info p{margin:0 0 10px; color:rgba(34,31,26,0.7); font-size:0.94rem; max-width:520px;}
 .sorteo-ganador{
