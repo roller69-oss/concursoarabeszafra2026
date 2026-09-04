@@ -1493,3 +1493,9 @@ window.DEMO_SORTEO = {
   descripcion: 'A lo largo del concurso se realizará un sorteo entre todos los participantes.',
   ganador: null
 };
+
+window.DEMO_ANUNCIOS = [
+  { id: 3, titulo: 'Horario actualizado', texto: 'La entrega de premios se adelanta media hora, a las 18:30.', creado_en: '2026-09-04T10:00:00Z' },
+  { id: 2, titulo: null, texto: 'Recordamos que el aparcamiento para participantes está en la zona norte del recinto.', creado_en: '2026-09-02T09:00:00Z' },
+  { id: 1, titulo: 'Bienvenidos', texto: 'Ya está abierta la inscripción de última hora en la carpa de organización.', creado_en: '2026-08-30T08:00:00Z' }
+];

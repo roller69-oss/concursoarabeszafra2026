@@ -121,3 +121,15 @@ create policy "admin escribe clases" on clases
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "admin escribe caballos" on caballos
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- 7) Tablón de anuncios
+create table if not exists anuncios (
+  id serial primary key,
+  titulo text,
+  texto text not null,
+  creado_en timestamptz not null default now()
+);
+alter table anuncios enable row level security;
+create policy "lectura publica anuncios" on anuncios for select using (true);
+create policy "admin escribe anuncios" on anuncios
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');

@@ -189,6 +189,25 @@ async function guardarSorteo(cambios) {
   if (error) throw error;
 }
 
+async function fetchAnuncios() {
+  if (DEMO_MODE) return window.DEMO_ANUNCIOS;
+  const { data, error } = await supa.from('anuncios').select('*').order('creado_en', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+async function crearAnuncio({ titulo, texto }) {
+  if (DEMO_MODE) return;
+  const { error } = await supa.from('anuncios').insert({ titulo: titulo || null, texto });
+  if (error) throw error;
+}
+
+async function eliminarAnuncio(id) {
+  if (DEMO_MODE) return;
+  const { error } = await supa.from('anuncios').delete().eq('id', id);
+  if (error) throw error;
+}
+
 async function guardarCaballo(id, cambios) {
   if (DEMO_MODE) return; // modo demo: solo lectura
   const { error } = await supa.from('caballos').update(cambios).eq('id', id);
@@ -280,7 +299,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function currentRoute() {
   const hash = location.hash.replace(/^#\/?/, '');
   if (!hash) return { name: 'home' };
-  if (['clases', 'campeonatos', 'trofeos', 'sorteo'].includes(hash)) return { name: 'home', scrollTo: hash };
+  if (['anuncios', 'clases', 'campeonatos', 'trofeos', 'sorteo'].includes(hash)) return { name: 'home', scrollTo: hash };
   const [seg, param] = hash.split('/');
   if (seg === 'clase' && param) return { name: 'clase', codigo: decodeURIComponent(param) };
   if (seg === 'campeonato' && param) return { name: 'campeonato', codigo: decodeURIComponent(param) };
@@ -315,8 +334,8 @@ async function render() {
 // ------------------------------------------------------------
 async function renderHome() {
   app.innerHTML = `<p class="muted" style="padding:60px 0;text-align:center;">Cargando…</p>`;
-  const [evento, clases, campeonatos, trofeos, sorteo] = await Promise.all([
-    fetchEvento(), fetchClases(), fetchCampeonatos(), fetchTrofeos(), fetchSorteo()
+  const [evento, clases, campeonatos, trofeos, sorteo, anuncios] = await Promise.all([
+    fetchEvento(), fetchClases(), fetchCampeonatos(), fetchTrofeos(), fetchSorteo(), fetchAnuncios()
   ]);
 
   const urlCartel = evento.cartel_url || 'assets/cartel.jpg';
@@ -331,6 +350,11 @@ async function renderHome() {
       <h1 class="sr-only">${escapeHtml(evento.titulo)}</h1>
       ${cartel}
     </section>
+
+    <div class="section-title" id="anuncios">
+      <h2>Tablón de anuncios</h2>
+    </div>
+    <div id="anuncios-section"></div>
 
     ${colaboradores.length ? `
     <section class="logo-band">
@@ -387,10 +411,12 @@ async function renderHome() {
 
   await renderTrofeos(trofeos);
   renderSorteo(sorteo);
+  renderAnuncios(anuncios);
   if (isAdmin()) {
     wireAdminEventoPanel(evento);
     wireTrofeosAdmin(trofeos);
     wireSorteoAdmin(sorteo);
+    wireAnunciosAdmin(anuncios);
   }
 }
 
@@ -512,7 +538,7 @@ function renderSorteo(sorteo) {
           <line x1="8" y1="60" x2="112" y2="60" stroke="var(--oro)" stroke-width="2" opacity="0.5"/>
           <circle cx="60" cy="60" r="10" fill="var(--granate)"/>
         </svg>
-        <span class="bombo-emoji">🍖</span>
+        <img class="bombo-icono" src="assets/jamon-icono.png" alt="">
       </div>
       <div class="sorteo-info">
         <h3>${escapeHtml(sorteo.premio || 'Jamón')}</h3>
@@ -557,6 +583,114 @@ function wireSorteoAdmin(sorteo) {
     } catch (err) {
       console.error(err);
       setSaveStatus(status, 'Error al guardar', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+// ------------------------------------------------------------
+// Tablón de anuncios (en la portada)
+// ------------------------------------------------------------
+const ANUNCIOS_POR_PAGINA = 5;
+let anunciosVisibles = ANUNCIOS_POR_PAGINA;
+
+function fmtFechaHora(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}/${mm}/${yyyy} · ${hh}:${min}`;
+}
+
+function renderAnuncios(anuncios) {
+  const cont = document.getElementById('anuncios-section');
+  if (!cont) return;
+  const admin = isAdmin();
+  const visibles = anuncios.slice(0, anunciosVisibles);
+  const quedanMas = anuncios.length > anunciosVisibles;
+
+  cont.innerHTML = `
+    ${admin ? `
+      <div class="admin-panel" id="anuncio-form">
+        <h3>Publicar anuncio</h3>
+        <div class="field"><label>Título (opcional)</label><input id="anuncio-titulo" placeholder="p. ej. Cambio de horario"></div>
+        <div class="field"><label>Mensaje</label><textarea id="anuncio-texto" placeholder="Escribe aquí la información para los participantes"></textarea></div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn-primary" id="anuncio-publicar">Publicar anuncio</button>
+          <span class="save-status" id="anuncio-status"></span>
+        </div>
+      </div>
+    ` : ''}
+    ${anuncios.length === 0
+      ? `<div class="empty-state"><strong>Todavía no hay anuncios</strong></div>`
+      : `
+      <div class="anuncios-lista">
+        ${visibles.map(a => `
+          <div class="anuncio-card" data-id="${a.id}">
+            <div class="anuncio-cabecera">
+              <span class="anuncio-fecha">${fmtFechaHora(a.creado_en)}</span>
+              ${admin ? `<button class="btn-ghost btn-borrar-anuncio" data-id="${a.id}">Eliminar</button>` : ''}
+            </div>
+            ${a.titulo ? `<strong class="anuncio-titulo">${escapeHtml(a.titulo)}</strong>` : ''}
+            <p class="anuncio-texto">${escapeHtml(a.texto)}</p>
+          </div>
+        `).join('')}
+      </div>
+      ${quedanMas ? `<div style="margin-top:14px; text-align:center;"><button class="btn-ghost" id="anuncios-ver-mas">Ver anteriores</button></div>` : ''}
+    `}
+  `;
+
+  document.getElementById('anuncios-ver-mas')?.addEventListener('click', () => {
+    anunciosVisibles += ANUNCIOS_POR_PAGINA;
+    renderAnuncios(anuncios);
+    if (isAdmin()) wireAnunciosAdmin(anuncios);
+  });
+
+  document.querySelectorAll('.btn-borrar-anuncio').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('¿Eliminar este anuncio? No se puede deshacer.')) return;
+      try {
+        await eliminarAnuncio(btn.dataset.id);
+        const idx = anuncios.findIndex(a => String(a.id) === btn.dataset.id);
+        if (idx >= 0) anuncios.splice(idx, 1);
+        renderAnuncios(anuncios);
+        if (isAdmin()) wireAnunciosAdmin(anuncios);
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo eliminar, inténtalo de nuevo.');
+      }
+    });
+  });
+}
+
+function wireAnunciosAdmin(anuncios) {
+  const btn = document.getElementById('anuncio-publicar');
+  if (!btn) return;
+  const status = document.getElementById('anuncio-status');
+  btn.addEventListener('click', async () => {
+    const texto = document.getElementById('anuncio-texto').value.trim();
+    if (!texto) {
+      setSaveStatus(status, 'Escribe el mensaje antes de publicar', true);
+      return;
+    }
+    const titulo = document.getElementById('anuncio-titulo').value.trim();
+    btn.disabled = true;
+    try {
+      await crearAnuncio({ titulo, texto });
+      anunciosVisibles = ANUNCIOS_POR_PAGINA;
+      const fresh = await fetchAnuncios();
+      anuncios.length = 0;
+      anuncios.push(...fresh);
+      renderAnuncios(anuncios);
+      wireAnunciosAdmin(anuncios);
+      setSaveStatus(document.getElementById('anuncio-status'), 'Anuncio publicado ✓', false);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus(status, 'Error al publicar', true);
     } finally {
       btn.disabled = false;
     }

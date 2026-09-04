@@ -251,7 +251,11 @@ h1,h2,h3{font-family:var(--f-display); margin:0; font-weight:600; letter-spacing
   animation:bombo-gira 8s linear infinite;
 }
 @keyframes bombo-gira{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-.bombo-emoji{position:absolute; font-size:1.7rem; animation:bombo-contragira 8s linear infinite;}
+.bombo-icono{
+  position:absolute; width:38px; height:38px; border-radius:50%; object-fit:cover;
+  border:2px solid var(--marfil-alta); box-shadow:0 1px 4px rgba(0,0,0,0.25);
+  animation:bombo-contragira 8s linear infinite;
+}
 @keyframes bombo-contragira{ from{transform:rotate(0deg);} to{transform:rotate(-360deg);} }
 .sorteo-info h3{font-size:1.2rem; color:var(--verde-900); margin-bottom:6px;}
 .sorteo-info p{margin:0 0 10px; color:rgba(34,31,26,0.7); font-size:0.94rem; max-width:520px;}
@@ -259,6 +263,18 @@ h1,h2,h3{font-family:var(--f-display); margin:0; font-weight:600; letter-spacing
   font-family:var(--f-mono); font-size:1.05rem; color:var(--granate); font-weight:700;
 }
 .sorteo-pendiente{font-family:var(--f-mono); font-size:0.88rem; color:rgba(34,31,26,0.5);}
+
+/* ------- Tablón de anuncios ------- */
+.anuncios-lista{display:flex; flex-direction:column; gap:10px;}
+.anuncio-card{
+  background:var(--marfil-alta); border:1px solid var(--linea); border-radius:12px; padding:14px 18px;
+}
+.anuncio-cabecera{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;}
+.anuncio-fecha{font-family:var(--f-mono); font-size:0.76rem; color:rgba(34,31,26,0.5);}
+.anuncio-titulo{display:block; color:var(--verde-900); font-size:1rem; margin-bottom:2px;}
+.anuncio-texto{margin:0; font-size:0.94rem; line-height:1.5;}
+.btn-borrar-anuncio{padding:4px 12px; font-size:0.76rem; color:var(--granate); border-color:var(--linea);}
+.btn-borrar-anuncio:hover{border-color:var(--granate); background:rgba(110,42,42,0.06);}
 
 /* ============================================================
    VISTA DE CLASE
