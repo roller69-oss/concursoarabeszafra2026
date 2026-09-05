@@ -500,6 +500,42 @@ function trofeoGanadorTexto(t) {
   return t._caballo ? `${t._caballo.nombre} (dorsal ${t._caballo.dorsal ?? '—'}, clase ${t._caballo.clase_codigo})` : null;
 }
 
+function candidatosMejorPuntuacion(caballos) {
+  const puntuados = caballos.filter(h => totalFinal(h) != null);
+  if (!puntuados.length) return { max: null, candidatos: [] };
+  const max = Math.max(...puntuados.map(h => totalFinal(h)));
+  const candidatos = puntuados.filter(h => totalFinal(h) === max);
+  return { max, candidatos };
+}
+
+function trofeoGridMejorPuntuacion(t, caballos) {
+  const { max, candidatos } = candidatosMejorPuntuacion(caballos);
+  if (max == null) return `<p class="muted small">Todavía no hay ningún caballo puntuado.</p>`;
+
+  const seleccionado = candidatos.find(c => String(c.id) === String(t.ganador_caballo_id));
+  return `
+    <div class="trofeo-mp-wrap">
+      <p class="muted small">Máxima puntuación del concurso: <strong>${fmtNum(max)} pts</strong>${candidatos.length > 1 ? ` — ${candidatos.length} caballos empatados` : ''}.</p>
+      <div class="trofeo-mp-grid">
+        ${candidatos.map(h => `
+          <div class="trofeo-mp-card ${String(t.ganador_caballo_id) === String(h.id) ? 'seleccionado' : ''}" data-id="${h.id}" data-dorsal="${h.dorsal ?? ''}">
+            <span class="dorsal-grande">${h.dorsal ?? '—'}</span>
+            <strong>${escapeHtml(h.nombre)}</strong>
+            <span class="muted small">${escapeHtml(h.clase_titulo || '')}</span>
+            <span class="total-votos">${fmtNum(totalFinal(h))} pts</span>
+            <button type="button" class="btn-ghost btn-ver-notas" data-toggle="mp-${h.id}">Ver notas</button>
+          </div>
+        `).join('')}
+      </div>
+      ${candidatos.map(h => `<div class="detalle-notas" id="notas-mp-${h.id}" hidden>${scoreTable(h, false)}</div>`).join('')}
+      <label class="trofeo-mp-dorsal-label">O escribe el dorsal del ganador:
+        <input type="number" class="trofeo-mp-dorsal-input" placeholder="dorsal" value="${seleccionado ? seleccionado.dorsal ?? '' : ''}">
+      </label>
+      <input type="hidden" class="trofeo-mp-selected" value="${t.ganador_caballo_id || ''}">
+    </div>
+  `;
+}
+
 async function renderTrofeos(trofeos) {
   const cont = document.getElementById('trofeos-section');
   if (!cont) return;
@@ -525,7 +561,9 @@ async function renderTrofeos(trofeos) {
           ${admin ? (
             t.tipo === 'texto'
               ? `<input type="text" class="trofeo-input-texto" placeholder="Nombre del presentador" value="${escapeHtml(t.ganador_texto || '')}">`
-              : `<select class="trofeo-select">
+              : t.codigo === 'mejor-puntuacion'
+                ? trofeoGridMejorPuntuacion(t, caballos)
+                : `<select class="trofeo-select">
                    <option value="">— Sin adjudicar —</option>
                    ${agruparPorClase(caballos).map(grupo => `
                      <optgroup label="${escapeHtml(grupo.clase_titulo)}">
@@ -542,6 +580,7 @@ async function renderTrofeos(trofeos) {
       <span class="save-status" id="trofeos-status"></span>
     </div>` : ''}
   `;
+  wireVerNotas();
 }
 
 function agruparPorClase(caballos) {
@@ -556,6 +595,29 @@ function agruparPorClase(caballos) {
 }
 
 function wireTrofeosAdmin(trofeos) {
+  document.querySelectorAll('.trofeo-mp-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const wrap = card.closest('.trofeo-mp-wrap');
+      wrap.querySelectorAll('.trofeo-mp-card').forEach(c => c.classList.remove('seleccionado'));
+      card.classList.add('seleccionado');
+      wrap.querySelector('.trofeo-mp-selected').value = card.dataset.id;
+      wrap.querySelector('.trofeo-mp-dorsal-input').value = card.dataset.dorsal;
+    });
+  });
+  document.querySelectorAll('.trofeo-mp-dorsal-input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const wrap = inp.closest('.trofeo-mp-wrap');
+      const card = [...wrap.querySelectorAll('.trofeo-mp-card')].find(c => c.dataset.dorsal === inp.value.trim());
+      wrap.querySelectorAll('.trofeo-mp-card').forEach(c => c.classList.remove('seleccionado'));
+      if (card) {
+        card.classList.add('seleccionado');
+        wrap.querySelector('.trofeo-mp-selected').value = card.dataset.id;
+      } else {
+        wrap.querySelector('.trofeo-mp-selected').value = '';
+      }
+    });
+  });
+
   const btn = document.getElementById('guardar-trofeos');
   if (!btn) return;
   const status = document.getElementById('trofeos-status');
@@ -570,7 +632,8 @@ function wireTrofeosAdmin(trofeos) {
           const val = card.querySelector('.trofeo-input-texto').value.trim();
           updates.push({ id, cambios: { ganador_texto: val || null } });
         } else {
-          const val = card.querySelector('.trofeo-select').value;
+          const selectEl = card.querySelector('.trofeo-select');
+          const val = selectEl ? selectEl.value : (card.querySelector('.trofeo-mp-selected')?.value || '');
           updates.push({ id, cambios: { ganador_caballo_id: val ? Number(val) : null } });
         }
       });
