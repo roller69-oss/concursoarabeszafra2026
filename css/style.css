@@ -257,6 +257,8 @@ td.dorsal-grande{font-size:1.4rem; text-align:center;}
 .tabla-votos td, .tabla-votos th{vertical-align:middle;}
 .select-medalla{padding:7px 8px; border:1px solid var(--linea); border-radius:8px; font-size:0.88rem; min-width:110px;}
 .total-votos{font-family:var(--f-mono); font-weight:700; font-size:1.1rem; color:var(--granate); text-align:center;}
+.fila-notas td{background:var(--marfil); padding:14px 18px;}
+.podio-bloque .btn-ver-notas{margin-top:10px; font-size:0.78rem; padding:6px 14px;}
 
 /* ------- Podio final de campeonato (vista pública) ------- */
 .podio-final{
