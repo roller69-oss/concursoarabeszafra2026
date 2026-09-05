@@ -1179,26 +1179,8 @@ async function renderCampeonato(codigo) {
     ${!candidatos.length ? `
       <div class="empty-state"><strong>Todavía no hay candidatos</strong>Ningún caballo tiene 1º, 2º o 3º puesto guardado en las clases ${clasesFeeder.join(', ')} — resuelve primero esas clasificaciones.</div>
     ` : admin ? `
-      <div class="table-wrap">
-        <table class="resultados tabla-votos">
-          <thead><tr>
-            <th>Dorsal</th><th>Nombre</th><th>Juez I</th><th>Juez II</th><th>Total</th><th>Puesto</th>
-          </tr></thead>
-          <tbody>
-            ${candidatos.map((c, i) => `
-              <tr data-id="${c.id}">
-                <td class="dorsal-grande">${c.dorsal ?? '—'}</td>
-                <td class="nombre-cell">${escapeHtml(c.nombre)}<span class="detalle">${c.posicion}º clase ${c.clase_codigo}</span></td>
-                <td>${selectMedalla('juez1', c.juez1_medalla)}</td>
-                <td>${selectMedalla('juez2', c.juez2_medalla)}</td>
-                <td class="total-votos" data-total>${c.total}</td>
-                <td><span class="pos-editor-wrap"><input type="number" min="1" class="pos-input-clasif" value="${c.posicion_final ?? ''}" placeholder="auto"><span class="pos-auto-hint">auto: ${i + 1}º</span></span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). Mientras no escribas un puesto, el orden se actualiza solo según el total ("auto: Nº"); escribe un número solo si quieres fijarlo a mano.</p>
+      <div id="tabla-votos-wrap">${tablaVotos(candidatos)}</div>
+      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). El orden se actualiza al momento según el total ("auto: Nº"); escribe un número solo si quieres fijar el puesto de alguno a mano.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-campeonato">Guardar campeonato</button>
         <span class="save-status" id="guardar-campeonato-status"></span>
@@ -1211,6 +1193,39 @@ async function renderCampeonato(codigo) {
   `;
 
   if (admin) wireCampeonatoAdmin(camp, candidatos);
+}
+
+function ordenarCandidatos(lista) {
+  return [...lista].sort((a, b) => {
+    if (a.posicion_final != null && b.posicion_final != null) return a.posicion_final - b.posicion_final;
+    if (a.posicion_final != null) return -1;
+    if (b.posicion_final != null) return 1;
+    return b.total - a.total;
+  });
+}
+
+function tablaVotos(candidatos) {
+  return `
+    <div class="table-wrap">
+      <table class="resultados tabla-votos">
+        <thead><tr>
+          <th>Dorsal</th><th>Nombre</th><th>Juez I</th><th>Juez II</th><th>Total</th><th>Puesto</th>
+        </tr></thead>
+        <tbody>
+          ${candidatos.map((c, i) => `
+            <tr data-id="${c.id}">
+              <td class="dorsal-grande">${c.dorsal ?? '—'}</td>
+              <td class="nombre-cell">${escapeHtml(c.nombre)}<span class="detalle">${c.posicion}º clase ${c.clase_codigo}</span></td>
+              <td>${selectMedalla('juez1', c.juez1_medalla)}</td>
+              <td>${selectMedalla('juez2', c.juez2_medalla)}</td>
+              <td class="total-votos" data-total>${c.total}</td>
+              <td><span class="pos-editor-wrap"><input type="number" min="1" class="pos-input-clasif" value="${c.posicion_final ?? ''}" placeholder="auto"><span class="pos-auto-hint">auto: ${i + 1}º</span></span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 const PODIO_ORDEN_VISUAL = [1, 0, 2]; // se pinta Plata - Oro - Bronce, con el Oro más alto
@@ -1248,7 +1263,7 @@ function selectMedalla(juez, valor) {
   `;
 }
 
-function wireCampeonatoAdmin(camp, candidatos) {
+function wireCampeonatoAdmin(camp, candidatosIniciales) {
   const toggle = document.getElementById('publicar-campeonato-toggle');
   const status = document.getElementById('campeonato-status');
   toggle?.addEventListener('change', async () => {
@@ -1262,29 +1277,47 @@ function wireCampeonatoAdmin(camp, candidatos) {
     }
   });
 
-  document.querySelectorAll('.select-medalla').forEach(sel => {
-    sel.addEventListener('change', () => {
-      const row = sel.closest('tr');
-      const j1 = row.querySelector('[data-juez="juez1"]').value;
-      const j2 = row.querySelector('[data-juez="juez2"]').value;
-      row.querySelector('[data-total]').textContent = puntosMedalla(j1) + puntosMedalla(j2);
+  let estado = candidatosIniciales;
+
+  function leerEstadoDeTabla() {
+    const filas = [];
+    document.querySelectorAll('.tabla-votos tbody tr').forEach(row => {
+      const id = row.dataset.id;
+      const original = estado.find(c => String(c.id) === id);
+      const juez1_medalla = row.querySelector('[data-juez="juez1"]').value || '';
+      const juez2_medalla = row.querySelector('[data-juez="juez2"]').value || '';
+      const posInput = row.querySelector('.pos-input-clasif');
+      const posicion_final = posInput.value ? parseInt(posInput.value, 10) : null;
+      const total = puntosMedalla(juez1_medalla) + puntosMedalla(juez2_medalla);
+      filas.push({ ...original, juez1_medalla, juez2_medalla, posicion_final, total });
     });
-  });
+    return filas;
+  }
+
+  function repintar() {
+    estado = ordenarCandidatos(leerEstadoDeTabla());
+    document.getElementById('tabla-votos-wrap').innerHTML = tablaVotos(estado);
+    wireFilas();
+  }
+
+  function wireFilas() {
+    document.querySelectorAll('.select-medalla, .pos-input-clasif').forEach(el => {
+      el.addEventListener('change', repintar);
+    });
+  }
+  wireFilas();
 
   const guardarBtn = document.getElementById('guardar-campeonato');
   const guardarStatus = document.getElementById('guardar-campeonato-status');
   guardarBtn?.addEventListener('click', async () => {
     guardarBtn.disabled = true;
     try {
-      const filas = [];
-      document.querySelectorAll('.tabla-votos tbody tr').forEach(row => {
-        const caballo_id = Number(row.dataset.id);
-        const juez1_medalla = row.querySelector('[data-juez="juez1"]').value || null;
-        const juez2_medalla = row.querySelector('[data-juez="juez2"]').value || null;
-        const posInput = row.querySelector('.pos-input-clasif');
-        const posicion_final = posInput.value ? parseInt(posInput.value, 10) : null;
-        filas.push({ campeonato_id: camp.id, caballo_id, juez1_medalla, juez2_medalla, posicion_final });
-      });
+      const actual = leerEstadoDeTabla();
+      const filas = actual.map(c => ({
+        campeonato_id: camp.id, caballo_id: c.id,
+        juez1_medalla: c.juez1_medalla || null, juez2_medalla: c.juez2_medalla || null,
+        posicion_final: c.posicion_final,
+      }));
       await guardarVotosCampeonato(filas);
       setSaveStatus(guardarStatus, 'Campeonato guardado ✓', false);
     } catch (err) {
