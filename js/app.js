@@ -1206,23 +1206,35 @@ async function renderCampeonato(codigo) {
     ` : (!camp.publicado ? `
       <div class="empty-state"><strong>Campeonato aún no publicado</strong>La organización lo publicará en cuanto se decida.</div>
     ` : `
-      <div class="caballos-clasif">
-        ${candidatos.slice(0, 3).map((c, i) => `
-          <div class="resumen-card">
-            <div class="resumen-row">
-              <span class="pos-num pos-num-public">${MEDALLA_ETIQUETA[i]}</span>
-              <div class="resumen-info">
-                <strong class="caballo-nombre">${escapeHtml(c.nombre)}</strong>
-              </div>
-              <span class="dorsal-grande dorsal-grande-publico">Dorsal ${c.dorsal ?? '—'}</span>
-            </div>
-          </div>
-        `).join('')}
-      </div>
+      ${renderPodioFinal(candidatos)}
     `)}
   `;
 
   if (admin) wireCampeonatoAdmin(camp, candidatos);
+}
+
+const PODIO_ORDEN_VISUAL = [1, 0, 2]; // se pinta Plata - Oro - Bronce, con el Oro más alto
+const PODIO_CLASE = ['podio-oro', 'podio-plata', 'podio-bronce'];
+const PODIO_MEDALLA = ['🥇', '🥈', '🥉'];
+const PODIO_LABEL = ['Oro', 'Plata', 'Bronce'];
+
+function renderPodioFinal(candidatos) {
+  const top3 = candidatos.slice(0, 3);
+  if (!top3.length) return `<div class="empty-state"><strong>Todavía no hay resultado</strong></div>`;
+
+  const orden = PODIO_ORDEN_VISUAL.filter(i => top3[i]);
+  return `
+    <div class="podio-final">
+      ${orden.map(i => `
+        <div class="podio-bloque ${PODIO_CLASE[i]}">
+          <span class="podio-medalla-grande">${PODIO_MEDALLA[i]}</span>
+          <span class="podio-etiqueta">${PODIO_LABEL[i]}</span>
+          <strong class="podio-nombre">${escapeHtml(top3[i].nombre)}</strong>
+          <span class="podio-dorsal">Dorsal ${top3[i].dorsal ?? '—'}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 function selectMedalla(juez, valor) {

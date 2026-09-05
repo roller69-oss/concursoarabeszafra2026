@@ -10,6 +10,8 @@
   --oro:#c08829;
   --oro-suave:#e0b45c;
   --granate:#6e2a2a;
+  --plata:#a8a79c;
+  --bronce-medal:#a8722f;
   --granate-alta:#8a3838;
   --tinta:#221f1a;
   --linea:#d9cca3;
@@ -255,6 +257,35 @@ td.dorsal-grande{font-size:1.4rem; text-align:center;}
 .tabla-votos td, .tabla-votos th{vertical-align:middle;}
 .select-medalla{padding:7px 8px; border:1px solid var(--linea); border-radius:8px; font-size:0.88rem; min-width:110px;}
 .total-votos{font-family:var(--f-mono); font-weight:700; font-size:1.1rem; color:var(--granate); text-align:center;}
+
+/* ------- Podio final de campeonato (vista pública) ------- */
+.podio-final{
+  display:flex; align-items:flex-end; justify-content:center; gap:14px; flex-wrap:wrap;
+  margin:24px 0 8px;
+}
+.podio-bloque{
+  flex:1 1 150px; max-width:200px; text-align:center;
+  background:var(--marfil-alta); border-radius:18px 18px 10px 10px;
+  padding:22px 16px 20px; display:flex; flex-direction:column; align-items:center; gap:6px;
+  border:1px solid var(--linea); border-top-width:5px;
+}
+.podio-bloque.podio-oro{border-top-color:var(--oro); padding-top:32px; order:2; box-shadow:var(--shadow-2);}
+.podio-bloque.podio-plata{border-top-color:var(--plata); order:1;}
+.podio-bloque.podio-bronce{border-top-color:var(--bronce-medal); order:3;}
+.podio-medalla-grande{font-size:2.4rem; line-height:1;}
+.podio-etiqueta{
+  font-family:var(--f-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em;
+  color:rgba(34,31,26,0.5);
+}
+.podio-nombre{font-family:var(--f-display); font-size:1.15rem; color:var(--verde-900); margin-top:2px;}
+.podio-dorsal{
+  font-family:var(--f-mono); font-size:0.86rem; background:var(--verde-900); color:var(--marfil-alta);
+  padding:3px 12px; border-radius:999px; margin-top:6px;
+}
+@media (max-width:560px){
+  .podio-final{align-items:stretch;}
+  .podio-bloque{order:0 !important; max-width:none; flex-basis:100%;}
+}
 
 /* ------- Sorteo ------- */
 .sorteo-card{
