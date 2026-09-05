@@ -173,8 +173,9 @@ async function guardarCampeonato(id, cambios) {
   if (error) throw error;
 }
 
-const MEDALLA_PUNTOS = { oro: 4, plata: 3, bronce: 2 };
+const MEDALLA_PUNTOS = { oro: 4, plata: 2, bronce: 1 };
 const MEDALLA_LABEL = { oro: '🥇 Oro', plata: '🥈 Plata', bronce: '🥉 Bronce' };
+const MEDALLA_ETIQUETA = ['🥇 Oro', '🥈 Plata', '🥉 Bronce'];
 
 function puntosMedalla(medalla) {
   return MEDALLA_PUNTOS[medalla] || 0;
@@ -1197,7 +1198,7 @@ async function renderCampeonato(codigo) {
           </tbody>
         </table>
       </div>
-      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 3, Bronce = 2 por juez). El puesto ya viene sugerido según el total — cámbialo si hace falta y pulsa "Guardar campeonato".</p>
+      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). El puesto ya viene sugerido según el total — cámbialo si hace falta y pulsa "Guardar campeonato".</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-campeonato">Guardar campeonato</button>
         <span class="save-status" id="guardar-campeonato-status"></span>
@@ -1206,10 +1207,10 @@ async function renderCampeonato(codigo) {
       <div class="empty-state"><strong>Campeonato aún no publicado</strong>La organización lo publicará en cuanto se decida.</div>
     ` : `
       <div class="caballos-clasif">
-        ${candidatos.map((c, i) => `
+        ${candidatos.slice(0, 3).map((c, i) => `
           <div class="resumen-card">
             <div class="resumen-row">
-              <span class="pos-num pos-num-public">${c.posicion_final != null ? ordinal(c.posicion_final) : (i + 1) + 'º'}</span>
+              <span class="pos-num pos-num-public">${MEDALLA_ETIQUETA[i]}</span>
               <div class="resumen-info">
                 <strong class="caballo-nombre">${escapeHtml(c.nombre)}</strong>
               </div>
