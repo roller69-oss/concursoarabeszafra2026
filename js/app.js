@@ -957,7 +957,9 @@ function tablaSalida(caballos, admin, claseCodigo) {
 function leerNotasDeTarjeta(card) {
   const h = {};
   card.querySelectorAll('.score-input').forEach(inp => {
-    h[`j${inp.dataset.juez}_${inp.dataset.criterio}`] = inp.value === '' ? null : Number(inp.value);
+    const raw = inp.value.trim().replace(',', '.');
+    const num = raw === '' ? null : Number(raw);
+    h[`j${inp.dataset.juez}_${inp.dataset.criterio}`] = (num === null || isNaN(num)) ? null : num;
   });
   return h;
 }
@@ -1042,7 +1044,7 @@ function scoreTable(h, admin) {
   const fila = (juez) => CRITERIOS.map(c => {
     const val = h[`j${juez}_${c}`];
     return admin
-      ? `<td><input type="number" step="0.5" class="score-input" data-juez="${juez}" data-criterio="${c}" value="${val ?? ''}"></td>`
+      ? `<td><input type="text" inputmode="decimal" class="score-input" data-juez="${juez}" data-criterio="${c}" value="${val ?? ''}"></td>`
       : `<td>${fmtNum(val)}</td>`;
   }).join('');
 
