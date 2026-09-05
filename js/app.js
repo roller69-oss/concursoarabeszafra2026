@@ -529,7 +529,7 @@ async function renderTrofeos(trofeos) {
                    <option value="">— Sin adjudicar —</option>
                    ${agruparPorClase(caballos).map(grupo => `
                      <optgroup label="${escapeHtml(grupo.clase_titulo)}">
-                       ${grupo.caballos.map(h => `<option value="${h.id}" ${String(t.ganador_caballo_id) === String(h.id) ? 'selected' : ''}>${escapeHtml(h.nombre)} (dorsal ${h.dorsal ?? '—'})</option>`).join('')}
+                       ${grupo.caballos.map(h => `<option value="${h.id}" ${String(t.ganador_caballo_id) === String(h.id) ? 'selected' : ''}>${escapeHtml(h.nombre)} (dorsal ${h.dorsal ?? '—'}) — ${totalFinal(h) != null ? fmtNum(totalFinal(h)) + ' pts' : 'sin puntuación'}</option>`).join('')}
                      </optgroup>
                    `).join('')}
                  </select>`
