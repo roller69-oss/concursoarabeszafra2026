@@ -862,15 +862,24 @@ async function renderClase(codigo) {
 function paintClase(clase, caballos) {
   const admin = isAdmin();
   const salida = [...caballos].sort((a, b) => (a.dorsal ?? 999) - (b.dorsal ?? 999));
-  const clasif = caballos
-    .filter(h => !h.no_presentado && totalFinal(h) != null)
-    .sort((a, b) => {
-      if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
-      if (a.posicion != null) return -1;
-      if (b.posicion != null) return 1;
-      const diff = totalFinal(b) - totalFinal(a);
-      return diff !== 0 ? diff : desempatePorCriterio(a, b);
-    });
+  const clasif = clase.sin_puntuacion
+    ? caballos
+        .filter(h => !h.no_presentado)
+        .sort((a, b) => {
+          if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
+          if (a.posicion != null) return -1;
+          if (b.posicion != null) return 1;
+          return (a.dorsal ?? 0) - (b.dorsal ?? 0);
+        })
+    : caballos
+        .filter(h => !h.no_presentado && totalFinal(h) != null)
+        .sort((a, b) => {
+          if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
+          if (a.posicion != null) return -1;
+          if (b.posicion != null) return 1;
+          const diff = totalFinal(b) - totalFinal(a);
+          return diff !== 0 ? diff : desempatePorCriterio(a, b);
+        });
 
   app.innerHTML = `
     <a class="back-link" href="#/">← Volver a las clases</a>
@@ -890,14 +899,14 @@ function paintClase(clase, caballos) {
     <div id="tab-panel"></div>
 
     <div class="jueces-clase" id="jueces-clase">
-      ${admin ? `
+      ${clase.sin_puntuacion ? '' : (admin ? `
         <div class="jueces-editor">
           <label>Juez I <input type="text" id="juez1-input" value="${escapeHtml(clase.juez1 || '')}" placeholder="D. Nombre Apellido"></label>
           <label>Juez II <input type="text" id="juez2-input" value="${escapeHtml(clase.juez2 || '')}" placeholder="D. Nombre Apellido"></label>
           <button class="btn-ghost" id="guardar-jueces">Guardar jueces</button>
           <span class="save-status" id="jueces-status"></span>
         </div>
-      ` : (lineaJueces(clase.juez1, clase.juez2) ? `<p class="jueces-linea">${escapeHtml(lineaJueces(clase.juez1, clase.juez2))}</p>` : '')}
+      ` : (lineaJueces(clase.juez1, clase.juez2) ? `<p class="jueces-linea">${escapeHtml(lineaJueces(clase.juez1, clase.juez2))}</p>` : ''))}
     </div>
   `;
 
@@ -931,6 +940,16 @@ function paintClase(clase, caballos) {
   }
 
   const panel = document.getElementById('tab-panel');
+  if (clase.sin_puntuacion) {
+    if (activeTab === 'salida') {
+      panel.innerHTML = tablaSalidaSinPuntuacion(salida, admin, clase.codigo);
+      if (admin) wireNoPresentadoToggles(caballos);
+    } else {
+      panel.innerHTML = (admin ? adminBar(clase) : '') + tablaClasificacionSinPuntuacion(clasif, clase, admin);
+      if (admin) wireClasificacionSinPuntuacionAdmin(clase, clasif, caballos);
+    }
+    return;
+  }
   if (activeTab === 'salida') {
     panel.innerHTML = tablaSalida(salida, admin, clase.codigo);
     if (admin) wireOrdenSalidaAdmin(clase, salida, caballos);
@@ -990,6 +1009,145 @@ function tablaSalida(caballos, admin, claseCodigo) {
   `;
 }
 
+function tablaSalidaSinPuntuacion(caballos, admin, claseCodigo) {
+  if (!caballos.length) return `<div class="empty-state"><strong>Sin inscripciones todavía</strong></div>`;
+  const esHembra = CLASES_HEMBRA.includes(claseCodigo);
+  return `
+    <div class="caballos-clasif">
+      ${caballos.map(h => `
+        <div class="caballo-card ${h.no_presentado ? 'caballo-no-presentado' : ''}" data-id="${h.id}">
+          <div class="caballo-card-head">
+            <div class="pos-block"><span class="dorsal-circle">${h.dorsal ?? '—'}</span></div>
+            <div class="caballo-card-info">
+              <strong class="caballo-nombre">${escapeHtml(h.nombre)}${h.capa ? ` <span class="caballo-capa">(${escapeHtml(h.capa)})</span>` : ''}</strong>
+              <span class="caballo-sub">
+                ${esHembra ? 'Hija' : 'Hijo'} de ${escapeHtml(h.padre || '—')} y ${escapeHtml(h.madre || '—')}${h.abuelo_materno ? ` por ${escapeHtml(h.abuelo_materno)}` : ''}
+              </span>
+              <span class="caballo-meta">
+                Nacimiento: ${fmtFecha(h.fecha_nacimiento)} · Criador: ${escapeHtml(h.criador || '—')} · Propietario: ${escapeHtml(h.propietario || '—')}
+              </span>
+            </div>
+            ${admin
+              ? `<label class="chk-no-presentado-label"><input type="checkbox" class="chk-no-presentado" data-id="${h.id}" ${h.no_presentado ? 'checked' : ''}> No presentado</label>`
+              : (h.no_presentado ? `<span class="badge-no-presentado">No presentado</span>` : '')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function tablaClasificacionSinPuntuacion(caballos, clase, admin) {
+  if (!admin && !clase.clasificacion_publicada) {
+    return `<div class="empty-state"><strong>Clasificación aún no publicada</strong>La organización la publicará en cuanto se decida.</div>`;
+  }
+  if (!caballos.length) return `<div class="empty-state"><strong>Sin inscripciones todavía</strong></div>`;
+
+  return `
+    <div id="clasif-lista-wrap">${listaClasificacionSinPuntuacion(caballos, admin)}</div>
+    ${admin ? `
+      <p class="muted small">Esta clase no lleva hoja de notas: coloca tú el orden directamente. Mientras no escribas nada, se muestra por dorsal como referencia ("auto: Nº").</p>
+      <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
+        <button class="btn-primary" id="guardar-clasificacion">Guardar cambios</button>
+        <span class="save-status" id="guardar-status"></span>
+      </div>` : ''}
+  `;
+}
+
+function listaClasificacionSinPuntuacion(caballos, admin) {
+  return `
+    <div class="caballos-clasif">
+      ${caballos.map((h, i) => `
+        <div class="resumen-card" data-id="${h.id}">
+          <div class="resumen-row">
+            <div class="pos-block">
+              ${admin
+                ? `<span class="pos-editor-wrap"><input type="number" min="1" class="pos-input-clasif" value="${h.posicion ?? ''}" placeholder="auto"><span class="pos-auto-hint">auto: ${i + 1}º</span></span>`
+                : `<span class="pos-num pos-num-public">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º'}</span>`}
+            </div>
+            <div class="resumen-info">
+              <strong class="caballo-nombre">${escapeHtml(h.nombre)}</strong>
+              <span class="dorsal-grande dorsal-grande-publico">Dorsal ${h.dorsal ?? '—'}</span>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function wireClasificacionSinPuntuacionAdmin(clase, clasifInicial, todosCaballos) {
+  const status = document.getElementById('clase-status');
+  const toggle = document.getElementById('publicar-toggle');
+  toggle?.addEventListener('change', async () => {
+    try {
+      await guardarClase(clase.id, { clasificacion_publicada: toggle.checked });
+      clase.clasificacion_publicada = toggle.checked;
+      setSaveStatus(status, 'Guardado ✓', false);
+    } catch (err) {
+      setSaveStatus(status, 'Error al guardar', true);
+      toggle.checked = !toggle.checked;
+    }
+  });
+
+  let estado = clasifInicial;
+
+  function leerEstadoDeLista() {
+    const filas = [];
+    document.querySelectorAll('#clasif-lista-wrap .resumen-card').forEach(card => {
+      const id = card.dataset.id;
+      const original = estado.find(h => String(h.id) === id);
+      const posInput = card.querySelector('.pos-input-clasif');
+      const posicion = posInput.value ? parseInt(posInput.value, 10) : null;
+      filas.push({ ...original, posicion });
+    });
+    return filas;
+  }
+
+  function ordenar(lista) {
+    return [...lista].sort((a, b) => {
+      if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
+      if (a.posicion != null) return -1;
+      if (b.posicion != null) return 1;
+      return (a.dorsal ?? 0) - (b.dorsal ?? 0);
+    });
+  }
+
+  function repintar() {
+    estado = ordenar(leerEstadoDeLista());
+    document.getElementById('clasif-lista-wrap').innerHTML = listaClasificacionSinPuntuacion(estado, true);
+    wireFilas();
+  }
+
+  function wireFilas() {
+    document.querySelectorAll('#clasif-lista-wrap .pos-input-clasif').forEach(el => {
+      el.addEventListener('change', repintar);
+    });
+  }
+  wireFilas();
+
+  const guardarBtn = document.getElementById('guardar-clasificacion');
+  const guardarStatus = document.getElementById('guardar-status');
+  guardarBtn?.addEventListener('click', async () => {
+    guardarBtn.disabled = true;
+    try {
+      const actual = leerEstadoDeLista();
+      await Promise.all(actual.map(u => guardarCaballo(u.id, { posicion: u.posicion })));
+      actual.forEach(u => {
+        const h = todosCaballos.find(x => String(x.id) === String(u.id));
+        if (h) h.posicion = u.posicion;
+      });
+      setSaveStatus(guardarStatus, 'Clasificación guardada ✓', false);
+      paintClase(clase, todosCaballos);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus(guardarStatus, 'Error al guardar', true);
+    } finally {
+      guardarBtn.disabled = false;
+    }
+  });
+}
+
 function leerNotasDeTarjeta(card) {
   const h = {};
   card.querySelectorAll('.score-input').forEach(inp => {
@@ -1009,11 +1167,7 @@ function recalcularTarjeta(card) {
   card.querySelector('[data-total-final]').textContent = fmtNum(totalFinal(notas));
 }
 
-function wireOrdenSalidaAdmin(clase, salida, todosCaballos) {
-  document.querySelectorAll('.score-input').forEach(inp => {
-    inp.addEventListener('input', () => recalcularTarjeta(inp.closest('.caballo-card')));
-  });
-
+function wireNoPresentadoToggles(todosCaballos) {
   document.querySelectorAll('.chk-no-presentado').forEach(chk => {
     chk.addEventListener('change', async () => {
       const card = chk.closest('.caballo-card');
@@ -1030,6 +1184,14 @@ function wireOrdenSalidaAdmin(clase, salida, todosCaballos) {
       }
     });
   });
+}
+
+function wireOrdenSalidaAdmin(clase, salida, todosCaballos) {
+  document.querySelectorAll('.score-input').forEach(inp => {
+    inp.addEventListener('input', () => recalcularTarjeta(inp.closest('.caballo-card')));
+  });
+
+  wireNoPresentadoToggles(todosCaballos);
 
   const guardarBtn = document.getElementById('guardar-salida');
   const status = document.getElementById('guardar-salida-status');

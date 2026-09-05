@@ -1289,6 +1289,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "13",
+  "sin_puntuacion": true,
     "titulo": "Futurity|Hembra",
     "orden": 15,
     "clasificacion_publicada": false,
@@ -1321,6 +1322,7 @@ window.DEMO_CLASES = [
   },
   {
     "codigo": "14",
+  "sin_puntuacion": true,
     "titulo": "Futurity|Macho",
     "orden": 16,
     "clasificacion_publicada": false,

@@ -29,7 +29,8 @@ create table if not exists clases (
   orden int not null default 0,       -- orden de aparición en la portada
   clasificacion_publicada boolean not null default false,
   juez1 text,
-  juez2 text
+  juez2 text,
+  sin_puntuacion boolean not null default false  -- true: sin hoja de notas, clasificación directa a mano (ej. Futurity)
 );
 
 -- 3) Caballos inscritos en cada clase
