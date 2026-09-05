@@ -16,6 +16,7 @@ create table if not exists evento (
   colaboradores jsonb not null default '[]'::jsonb,
   juez1_general text,
   juez2_general text,
+  directo_url text,
   constraint evento_single_row check (id = 1)
 );
 insert into evento (id) values (1) on conflict (id) do nothing;
@@ -137,3 +138,33 @@ alter table anuncios enable row level security;
 create policy "lectura publica anuncios" on anuncios for select using (true);
 create policy "admin escribe anuncios" on anuncios
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- 8) Contador de visitas (orientativo, solo lo ve la organización)
+create table if not exists visitas (
+  id int primary key default 1,
+  total bigint not null default 0,
+  constraint visitas_single_row check (id = 1)
+);
+insert into visitas (id) values (1) on conflict (id) do nothing;
+
+alter table visitas enable row level security;
+
+-- Solo la organización puede LEER el contador
+create policy "lectura admin visitas" on visitas for select using (auth.role() = 'authenticated');
+-- Nadie puede escribir directamente en la tabla; solo a través de la función de abajo
+
+create or replace function incrementar_visitas()
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  nuevo_total bigint;
+begin
+  update visitas set total = total + 1 where id = 1 returning total into nuevo_total;
+  return nuevo_total;
+end;
+$$;
+
+grant execute on function incrementar_visitas() to anon, authenticated;

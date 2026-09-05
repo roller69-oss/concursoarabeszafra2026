@@ -98,7 +98,8 @@ async function fetchEvento() {
       patrocinadores: [],
       colaboradores: [],
       juez1_general: null,
-      juez2_general: null
+      juez2_general: null,
+      directo_url: null
     };
   }
   const { data, error } = await supa.from('evento').select('*').eq('id', 1).single();
@@ -217,6 +218,13 @@ async function eliminarAnuncio(id) {
   if (error) throw error;
 }
 
+async function fetchVisitas() {
+  if (DEMO_MODE) return null;
+  const { data, error } = await supa.from('visitas').select('total').eq('id', 1).single();
+  if (error) return null;
+  return data.total;
+}
+
 async function guardarCaballo(id, cambios) {
   if (DEMO_MODE) return; // modo demo: solo lectura
   const { error } = await supa.from('caballos').update(cambios).eq('id', id);
@@ -302,13 +310,16 @@ window.addEventListener('hashchange', render);
 window.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
   updateAdminUI();
+  if (!DEMO_MODE && !isAdmin()) {
+    supa.rpc('incrementar_visitas').then(null, () => {}); // silencioso, no bloquea la carga
+  }
   render();
 });
 
 function currentRoute() {
   const hash = location.hash.replace(/^#\/?/, '');
   if (!hash) return { name: 'home' };
-  if (['anuncios', 'clases', 'campeonatos', 'trofeos', 'sorteo'].includes(hash)) return { name: 'home', scrollTo: hash };
+  if (['anuncios', 'clases', 'campeonatos', 'trofeos', 'sorteo', 'directo'].includes(hash)) return { name: 'home', scrollTo: hash };
   const [seg, param] = hash.split('/');
   if (seg === 'clase' && param) return { name: 'clase', codigo: decodeURIComponent(param) };
   if (seg === 'campeonato' && param) return { name: 'campeonato', codigo: decodeURIComponent(param) };
@@ -346,6 +357,7 @@ async function renderHome() {
   const [evento, clases, campeonatos, trofeos, sorteo, anuncios] = await Promise.all([
     fetchEvento(), fetchClases(), fetchCampeonatos(), fetchTrofeos(), fetchSorteo(), fetchAnuncios()
   ]);
+  const visitas = isAdmin() ? await fetchVisitas() : null;
 
   const urlCartel = evento.cartel_url || 'assets/cartel.jpg';
   const cartel = `
@@ -364,6 +376,17 @@ async function renderHome() {
       <h2>Tablón de anuncios</h2>
     </div>
     <div id="anuncios-section"></div>
+
+    ${(evento.directo_url || isAdmin()) ? `
+    <div class="section-title" id="directo">
+      <h2>En directo</h2>
+    </div>
+    ${evento.directo_url ? `
+      <a class="btn-directo" href="${escapeHtml(evento.directo_url)}" target="_blank" rel="noopener">
+        ▶ Ver el concurso en directo (YouTube)
+      </a>
+    ` : `<p class="muted small">Añade el enlace de YouTube en "Editar portada", campo "URL para ver en directo", cuando lo tengas.</p>`}
+    ` : ''}
 
     ${colaboradores.length ? `
     <section class="logo-band">
@@ -417,12 +440,15 @@ async function renderHome() {
     </div>
     <div id="sorteo-section"></div>
 
+    ${isAdmin() ? `<p class="visitas-contador">👁 ${visitas != null ? visitas.toLocaleString('es-ES') : '—'} visitas registradas (orientativo)</p>` : ''}
     ${isAdmin() ? renderAdminEventoPanel(evento) : ''}
   `;
 
   await renderTrofeos(trofeos);
   renderSorteo(sorteo);
   renderAnuncios(anuncios);
+  const btnDirecto = document.getElementById('quicknav-directo');
+  if (btnDirecto) btnDirecto.hidden = !(evento.directo_url || isAdmin());
   if (isAdmin()) {
     wireAdminEventoPanel(evento);
     wireTrofeosAdmin(trofeos);
@@ -730,6 +756,7 @@ function renderAdminEventoPanel(evento) {
       <div class="field"><label>Fechas</label><input id="ev-fechas" placeholder="p. ej. 12–14 de septiembre de 2026" value="${escapeHtml(evento.fechas || '')}"></div>
       <div class="field"><label>Descripción</label><textarea id="ev-descripcion">${escapeHtml(evento.descripcion || '')}</textarea></div>
       <div class="field"><label>URL del cartel</label><input id="ev-cartel" placeholder="https://…" value="${escapeHtml(evento.cartel_url || '')}"></div>
+      <div class="field"><label>URL para ver en directo (YouTube) — déjalo vacío hasta que empiece la emisión</label><input id="ev-directo" placeholder="https://youtube.com/…" value="${escapeHtml(evento.directo_url || '')}"></div>
       <div class="field"><label>Organiza / colabora — una línea por logo: Nombre|URL de imagen</label><textarea id="ev-colaboradores">${escapeHtml(colabText)}</textarea></div>
       <div class="field"><label>Patrocinadores — una línea por logo: Nombre|URL de imagen</label><textarea id="ev-patrocinadores">${escapeHtml(patroText)}</textarea></div>
       <div class="field"><label>Juez I general (se muestra al final de Campeonatos y Trofeos)</label><input id="ev-juez1" placeholder="D. Nombre Apellido" value="${escapeHtml(evento.juez1_general || '')}"></div>
@@ -763,6 +790,7 @@ function wireAdminEventoPanel() {
         fechas: document.getElementById('ev-fechas').value.trim(),
         descripcion: document.getElementById('ev-descripcion').value.trim(),
         cartel_url: document.getElementById('ev-cartel').value.trim(),
+        directo_url: document.getElementById('ev-directo').value.trim() || null,
         colaboradores: parseLogoLines(document.getElementById('ev-colaboradores').value),
         patrocinadores: parseLogoLines(document.getElementById('ev-patrocinadores').value),
         juez1_general: document.getElementById('ev-juez1').value.trim() || null,
