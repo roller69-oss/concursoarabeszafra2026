@@ -1237,7 +1237,7 @@ function tablaVotos(candidatos) {
         </tr></thead>
         <tbody>
           ${candidatos.map((c, i) => `
-            <tr data-id="${c.id}">
+            <tr class="fila-datos" data-id="${c.id}">
               <td class="dorsal-grande">${c.dorsal ?? '—'}</td>
               <td class="nombre-cell">${escapeHtml(c.nombre)}<span class="detalle">${c.posicion}º clase ${c.clase_codigo}</span></td>
               <td>${selectMedalla('juez1', c.juez1_medalla)}</td>
@@ -1313,7 +1313,7 @@ function wireCampeonatoAdmin(camp, candidatosIniciales) {
 
   function leerEstadoDeTabla() {
     const filas = [];
-    document.querySelectorAll('.tabla-votos tbody tr').forEach(row => {
+    document.querySelectorAll('.tabla-votos tbody tr.fila-datos').forEach(row => {
       const id = row.dataset.id;
       const original = estado.find(c => String(c.id) === id);
       const juez1_medalla = row.querySelector('[data-juez="juez1"]').value || '';
