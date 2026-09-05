@@ -50,6 +50,18 @@ function totalFinal(h) {
   return (t1 + t2) / 2;
 }
 
+function sumaCriterioAmbosJueces(h, criterio) {
+  return (Number(h[`j1_${criterio}`]) || 0) + (Number(h[`j2_${criterio}`]) || 0);
+}
+
+// En caso de empate en el total: gana quien tenga más en Tipo (T); si sigue empatado, en Movimiento (M)
+function desempatePorCriterio(a, b) {
+  const tA = sumaCriterioAmbosJueces(a, 't'), tB = sumaCriterioAmbosJueces(b, 't');
+  if (tB !== tA) return tB - tA;
+  const mA = sumaCriterioAmbosJueces(a, 'm'), mB = sumaCriterioAmbosJueces(b, 'm');
+  return mB - mA;
+}
+
 function fmtNum(n) {
   if (n === null || n === undefined || n === '') return '—';
   const num = Number(n);
@@ -856,7 +868,8 @@ function paintClase(clase, caballos) {
       if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
       if (a.posicion != null) return -1;
       if (b.posicion != null) return 1;
-      return totalFinal(b) - totalFinal(a);
+      const diff = totalFinal(b) - totalFinal(a);
+      return diff !== 0 ? diff : desempatePorCriterio(a, b);
     });
 
   app.innerHTML = `
@@ -1101,7 +1114,7 @@ function tablaClasificacion(caballos, clase, admin) {
   return `
     <div id="clasif-lista-wrap">${listaClasificacion(caballos, admin)}</div>
     ${admin ? `
-      <p class="muted small">Mientras no escribas nada en la casilla, el orden se actualiza solo según la puntuación (verás "auto: Nº" como referencia). Si quieres fijar el puesto de un caballo a mano, escribe el número — el resto seguirá ordenándose solo.</p>
+      <p class="muted small">Mientras no escribas nada en la casilla, el orden se actualiza solo según la puntuación (en caso de empate, gana quien tenga más en Tipo, y si sigue igual, en Movimiento). Verás "auto: Nº" como referencia. Si quieres fijar el puesto de un caballo a mano, escribe el número — el resto seguirá ordenándose solo.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-clasificacion">Guardar cambios</button>
         <span class="save-status" id="guardar-status"></span>
@@ -1162,7 +1175,8 @@ async function renderCampeonato(codigo) {
       if (a.posicion_final != null && b.posicion_final != null) return a.posicion_final - b.posicion_final;
       if (a.posicion_final != null) return -1;
       if (b.posicion_final != null) return 1;
-      return b.total - a.total;
+      const diff = b.total - a.total;
+      return diff !== 0 ? diff : desempatePorCriterio(a, b);
     });
 
   app.innerHTML = `
@@ -1188,7 +1202,7 @@ async function renderCampeonato(codigo) {
       <div class="empty-state"><strong>Todavía no hay candidatos</strong>Ningún caballo tiene 1º, 2º o 3º puesto guardado en las clases ${clasesFeeder.join(', ')} — resuelve primero esas clasificaciones.</div>
     ` : admin ? `
       <div id="tabla-votos-wrap">${tablaVotos(candidatos)}</div>
-      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). El orden se actualiza al momento según el total ("auto: Nº"); escribe un número solo si quieres fijar el puesto de alguno a mano.</p>
+      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). En caso de empate, gana quien tenga más en Tipo (T) en su clase, y si sigue igual, en Movimiento (M). El orden se actualiza al momento ("auto: Nº"); escribe un número solo si quieres fijar el puesto de alguno a mano.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-campeonato">Guardar campeonato</button>
         <span class="save-status" id="guardar-campeonato-status"></span>
@@ -1209,7 +1223,8 @@ function ordenarCandidatos(lista) {
     if (a.posicion_final != null && b.posicion_final != null) return a.posicion_final - b.posicion_final;
     if (a.posicion_final != null) return -1;
     if (b.posicion_final != null) return 1;
-    return b.total - a.total;
+    const diff = b.total - a.total;
+    return diff !== 0 ? diff : desempatePorCriterio(a, b);
   });
 }
 
@@ -1380,7 +1395,8 @@ function wireClasificacionAdmin(clase, clasifInicial, todosCaballos) {
       if (a.posicion != null && b.posicion != null) return a.posicion - b.posicion;
       if (a.posicion != null) return -1;
       if (b.posicion != null) return 1;
-      return totalFinal(b) - totalFinal(a);
+      const diff = totalFinal(b) - totalFinal(a);
+      return diff !== 0 ? diff : desempatePorCriterio(a, b);
     });
   }
 
