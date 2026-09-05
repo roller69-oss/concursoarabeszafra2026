@@ -518,6 +518,18 @@ function candidatosMejorCriterio(caballos, criterio) {
   return { max, candidatos };
 }
 
+function candidatosMejorPuntuacionEntre(caballos, filtroFn) {
+  const elegibles = caballos.filter(filtroFn).filter(h => totalFinal(h) != null);
+  if (!elegibles.length) return { max: null, candidatos: [] };
+  const max = Math.max(...elegibles.map(h => totalFinal(h)));
+  const candidatos = elegibles.filter(h => totalFinal(h) === max);
+  return { max, candidatos };
+}
+
+function esPureSpanish(h) {
+  return /\*\s*$/.test((h.nombre || '').trim());
+}
+
 const TROFEO_AUTO_CONFIG = {
   'mejor-puntuacion': {
     etiquetaMax: 'Máxima puntuación del concurso',
@@ -529,11 +541,17 @@ const TROFEO_AUTO_CONFIG = {
     obtenerCandidatos: (caballos) => candidatosMejorCriterio(caballos, 'm'),
     mostrarValor: h => `M: ${fmtNum(sumaCriterioAmbosJueces(h, 'm'))} · Total: ${fmtNum(totalFinal(h))} pts`,
   },
+  'mejor-pure-spanish': {
+    etiquetaMax: 'Máxima puntuación entre los Pure Spanish (*)',
+    obtenerCandidatos: (caballos) => candidatosMejorPuntuacionEntre(caballos, esPureSpanish),
+    mostrarValor: h => `${fmtNum(totalFinal(h))} pts`,
+    mensajeVacio: 'Todavía no hay ningún caballo marcado como Pure Spanish (*) con puntuación.',
+  },
 };
 
 function trofeoGridPorCriterio(t, caballos, config) {
   const { max, candidatos } = config.obtenerCandidatos(caballos);
-  if (max == null) return `<p class="muted small">Todavía no hay ningún caballo puntuado.</p>`;
+  if (max == null) return `<p class="muted small">${config.mensajeVacio || 'Todavía no hay ningún caballo puntuado.'}</p>`;
 
   const seleccionado = candidatos.find(c => String(c.id) === String(t.ganador_caballo_id));
   return `
