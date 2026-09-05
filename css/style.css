@@ -287,6 +287,16 @@ h1,h2,h3{font-family:var(--f-display); margin:0; font-weight:600; letter-spacing
 }
 .back-link:hover{color:var(--oro);}
 
+.jueces-clase{margin-top:28px; padding-top:16px; border-top:1px dashed var(--linea);}
+.jueces-linea{
+  font-family:var(--f-mono); font-size:0.8rem; letter-spacing:0.02em;
+  color:rgba(34,31,26,0.55); text-align:center; margin:0;
+}
+.jueces-linea-seccion{margin:14px 0 0;}
+.jueces-editor{display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px;}
+.jueces-editor label{display:flex; flex-direction:column; gap:4px; font-size:0.82rem; font-weight:600; color:rgba(34,31,26,0.7);}
+.jueces-editor input{padding:8px 10px; border:1px solid var(--linea); border-radius:8px; font-size:0.88rem; min-width:200px;}
+
 .clase-header{
   display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px;
   margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid var(--linea);

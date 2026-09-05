@@ -14,6 +14,8 @@ create table if not exists evento (
   cartel_url text default '',
   patrocinadores jsonb not null default '[]'::jsonb,
   colaboradores jsonb not null default '[]'::jsonb,
+  juez1_general text,
+  juez2_general text,
   constraint evento_single_row check (id = 1)
 );
 insert into evento (id) values (1) on conflict (id) do nothing;
@@ -24,7 +26,9 @@ create table if not exists clases (
   codigo text unique not null,        -- '1A', '2B', '7', 'FUTURITY-H'...
   titulo text not null,               -- '1 AÑO · HEMBRAS'
   orden int not null default 0,       -- orden de aparición en la portada
-  clasificacion_publicada boolean not null default false
+  clasificacion_publicada boolean not null default false,
+  juez1 text,
+  juez2 text
 );
 
 -- 3) Caballos inscritos en cada clase

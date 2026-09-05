@@ -64,6 +64,13 @@ function tituloPlano(titulo) {
   return escapeHtml(titulo.split('|').map(l => l.trim()).join(' · '));
 }
 
+function lineaJueces(j1, j2) {
+  const partes = [];
+  if (j1 && j1.trim()) partes.push(`JUEZ I, ${j1.trim()}`);
+  if (j2 && j2.trim()) partes.push(`JUEZ II, ${j2.trim()}`);
+  return partes.join(' - ');
+}
+
 function ordinal(n) {
   if (n === null || n === undefined) return '—';
   return `${n}º`;
@@ -89,7 +96,9 @@ async function fetchEvento() {
       descripcion: 'Organizado con el apoyo de la Asociación Nacional y la Asociación Extremeña del Caballo Árabe, y la colaboración del Ayuntamiento de Zafra.',
       cartel_url: '',
       patrocinadores: [],
-      colaboradores: []
+      colaboradores: [],
+      juez1_general: null,
+      juez2_general: null
     };
   }
   const { data, error } = await supa.from('evento').select('*').eq('id', 1).single();
@@ -394,12 +403,14 @@ async function renderHome() {
         </a>
       `).join('')}
     </div>
+    ${lineaJueces(evento.juez1_general, evento.juez2_general) ? `<p class="jueces-linea jueces-linea-seccion">${escapeHtml(lineaJueces(evento.juez1_general, evento.juez2_general))}</p>` : ''}
 
     <div class="section-title" id="trofeos">
       <h2>Trofeos</h2>
       <span class="count">${trofeos.length}</span>
     </div>
     <div id="trofeos-section"></div>
+    ${lineaJueces(evento.juez1_general, evento.juez2_general) ? `<p class="jueces-linea jueces-linea-seccion">${escapeHtml(lineaJueces(evento.juez1_general, evento.juez2_general))}</p>` : ''}
 
     <div class="section-title" id="sorteo">
       <h2>Sorteo</h2>
@@ -721,6 +732,8 @@ function renderAdminEventoPanel(evento) {
       <div class="field"><label>URL del cartel</label><input id="ev-cartel" placeholder="https://…" value="${escapeHtml(evento.cartel_url || '')}"></div>
       <div class="field"><label>Organiza / colabora — una línea por logo: Nombre|URL de imagen</label><textarea id="ev-colaboradores">${escapeHtml(colabText)}</textarea></div>
       <div class="field"><label>Patrocinadores — una línea por logo: Nombre|URL de imagen</label><textarea id="ev-patrocinadores">${escapeHtml(patroText)}</textarea></div>
+      <div class="field"><label>Juez I general (se muestra al final de Campeonatos y Trofeos)</label><input id="ev-juez1" placeholder="D. Nombre Apellido" value="${escapeHtml(evento.juez1_general || '')}"></div>
+      <div class="field"><label>Juez II general</label><input id="ev-juez2" placeholder="D. Nombre Apellido" value="${escapeHtml(evento.juez2_general || '')}"></div>
       <div style="display:flex; align-items:center; gap:12px;">
         <button class="btn-primary" id="ev-guardar">Guardar portada</button>
         <span class="save-status" id="ev-status"></span>
@@ -752,6 +765,8 @@ function wireAdminEventoPanel() {
         cartel_url: document.getElementById('ev-cartel').value.trim(),
         colaboradores: parseLogoLines(document.getElementById('ev-colaboradores').value),
         patrocinadores: parseLogoLines(document.getElementById('ev-patrocinadores').value),
+        juez1_general: document.getElementById('ev-juez1').value.trim() || null,
+        juez2_general: document.getElementById('ev-juez2').value.trim() || null,
       });
       setSaveStatus(status, 'Guardado ✓', false);
       render();
@@ -809,6 +824,17 @@ function paintClase(clase, caballos) {
     </div>
 
     <div id="tab-panel"></div>
+
+    <div class="jueces-clase" id="jueces-clase">
+      ${admin ? `
+        <div class="jueces-editor">
+          <label>Juez I <input type="text" id="juez1-input" value="${escapeHtml(clase.juez1 || '')}" placeholder="D. Nombre Apellido"></label>
+          <label>Juez II <input type="text" id="juez2-input" value="${escapeHtml(clase.juez2 || '')}" placeholder="D. Nombre Apellido"></label>
+          <button class="btn-ghost" id="guardar-jueces">Guardar jueces</button>
+          <span class="save-status" id="jueces-status"></span>
+        </div>
+      ` : (lineaJueces(clase.juez1, clase.juez2) ? `<p class="jueces-linea">${escapeHtml(lineaJueces(clase.juez1, clase.juez2))}</p>` : '')}
+    </div>
   `;
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -817,6 +843,28 @@ function paintClase(clase, caballos) {
       paintClase(clase, caballos);
     });
   });
+
+  if (admin) {
+    const guardarJuecesBtn = document.getElementById('guardar-jueces');
+    const juecesStatus = document.getElementById('jueces-status');
+    guardarJuecesBtn?.addEventListener('click', async () => {
+      guardarJuecesBtn.disabled = true;
+      try {
+        const cambios = {
+          juez1: document.getElementById('juez1-input').value.trim() || null,
+          juez2: document.getElementById('juez2-input').value.trim() || null,
+        };
+        await guardarClase(clase.id, cambios);
+        Object.assign(clase, cambios);
+        setSaveStatus(juecesStatus, 'Guardado ✓', false);
+      } catch (err) {
+        console.error(err);
+        setSaveStatus(juecesStatus, 'Error al guardar', true);
+      } finally {
+        guardarJuecesBtn.disabled = false;
+      }
+    });
+  }
 
   const panel = document.getElementById('tab-panel');
   if (activeTab === 'salida') {
