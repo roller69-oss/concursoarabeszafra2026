@@ -173,6 +173,26 @@ async function guardarCampeonato(id, cambios) {
   if (error) throw error;
 }
 
+const MEDALLA_PUNTOS = { oro: 4, plata: 3, bronce: 2 };
+const MEDALLA_LABEL = { oro: '🥇 Oro', plata: '🥈 Plata', bronce: '🥉 Bronce' };
+
+function puntosMedalla(medalla) {
+  return MEDALLA_PUNTOS[medalla] || 0;
+}
+
+async function fetchVotosCampeonato(campeonatoId) {
+  if (DEMO_MODE) return [];
+  const { data, error } = await supa.from('campeonato_votos').select('*').eq('campeonato_id', campeonatoId);
+  if (error) throw error;
+  return data;
+}
+
+async function guardarVotosCampeonato(filas) {
+  if (DEMO_MODE) return;
+  const { error } = await supa.from('campeonato_votos').upsert(filas, { onConflict: 'campeonato_id,caballo_id' });
+  if (error) throw error;
+}
+
 async function fetchTrofeos() {
   if (DEMO_MODE) return window.DEMO_TROFEOS;
   const { data, error } = await supa.from('trofeos').select('*').order('orden', { ascending: true });
@@ -1082,12 +1102,12 @@ function tablaClasificacion(caballos, clase, admin) {
           <div class="resumen-row">
             <div class="pos-block">
               ${admin
-                ? `<input type="number" min="1" class="pos-input-clasif" value="${h.posicion ?? ''}" placeholder="${i + 1}">`
+                ? `<input type="number" min="1" class="pos-input-clasif" value="${h.posicion ?? (i + 1)}">`
                 : `<span class="pos-num pos-num-public">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º'}</span>`}
             </div>
             <div class="resumen-info">
               <strong class="caballo-nombre">${escapeHtml(h.nombre)}</strong>
-              <span class="caballo-sub">Dorsal ${h.dorsal ?? '—'}</span>
+              <span class="dorsal-grande dorsal-grande-publico">Dorsal ${h.dorsal ?? '—'}</span>
             </div>
             <div class="resumen-total">${fmtNum(totalFinal(h))}</div>
             <button class="btn-ghost btn-ver-notas" data-toggle="${h.id}">Ver notas</button>
@@ -1097,7 +1117,7 @@ function tablaClasificacion(caballos, clase, admin) {
       `).join('')}
     </div>
     ${admin ? `
-      <p class="muted small">Sin casilla de puesto rellenada: se muestran ordenados por puntuación, de mayor a menor.</p>
+      <p class="muted small">Cada casilla ya trae un puesto sugerido según la puntuación — cámbialo si no es el orden final que quieres, y pulsa "Guardar cambios" para que quede guardado de verdad.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-clasificacion">Guardar cambios</button>
         <span class="save-status" id="guardar-status"></span>
@@ -1115,20 +1135,26 @@ async function renderCampeonato(codigo) {
     app.innerHTML = `<div class="empty-state"><strong>Campeonato no encontrado</strong><a href="#/">Volver a la portada</a></div>`;
     return;
   }
-  const todosCaballos = await fetchTodosCaballos();
+  const [todosCaballos, votos] = await Promise.all([fetchTodosCaballos(), fetchVotosCampeonato(camp.id)]);
   const admin = isAdmin();
 
   const clasesFeeder = camp.clases || [];
+  const votosPorCaballo = {};
+  votos.forEach(v => { votosPorCaballo[v.caballo_id] = v; });
+
   const candidatos = todosCaballos
     .filter(h => clasesFeeder.includes(h.clase_codigo) && h.posicion != null && h.posicion <= 3)
-    .sort((a, b) => (a.clase_codigo.localeCompare(b.clase_codigo)) || (a.posicion - b.posicion));
-
-  const buscar = (id) => todosCaballos.find(h => String(h.id) === String(id)) || null;
-  const puestos = [
-    { key: 'oro_id', label: 'Oro', medalla: '🥇' },
-    { key: 'plata_id', label: 'Plata', medalla: '🥈' },
-    { key: 'bronce_id', label: 'Bronce', medalla: '🥉' },
-  ];
+    .map(h => {
+      const v = votosPorCaballo[h.id] || {};
+      const total = puntosMedalla(v.juez1_medalla) + puntosMedalla(v.juez2_medalla);
+      return { ...h, juez1_medalla: v.juez1_medalla || '', juez2_medalla: v.juez2_medalla || '', posicion_final: v.posicion_final ?? null, total };
+    })
+    .sort((a, b) => {
+      if (a.posicion_final != null && b.posicion_final != null) return a.posicion_final - b.posicion_final;
+      if (a.posicion_final != null) return -1;
+      if (b.posicion_final != null) return 1;
+      return b.total - a.total;
+    });
 
   app.innerHTML = `
     <a class="back-link" href="#/">← Volver a la portada</a>
@@ -1149,40 +1175,67 @@ async function renderCampeonato(codigo) {
       </div>
     ` : ''}
 
-    ${(!admin && !camp.publicado) ? `
-      <div class="empty-state"><strong>Campeonato aún no publicado</strong>La organización lo publicará en cuanto se decida.</div>
-    ` : `
-      <div class="podio">
-        ${puestos.map(p => {
-          const h = buscar(camp[p.key]);
-          return `
-            <div class="podio-puesto">
-              <div class="podio-medalla">${p.medalla} ${p.label}</div>
-              ${admin ? `
-                <select class="podio-select" data-key="${p.key}">
-                  <option value="">— Sin elegir —</option>
-                  ${candidatos.map(c => `<option value="${c.id}" ${String(camp[p.key]) === String(c.id) ? 'selected' : ''}>${escapeHtml(c.nombre)} (${c.posicion}º clase ${c.clase_codigo})</option>`).join('')}
-                </select>
-              ` : `
-                <div class="podio-caballo">${h ? escapeHtml(h.nombre) : '<em>Sin adjudicar</em>'}</div>
-              `}
-            </div>
-          `;
-        }).join('')}
+    ${!candidatos.length ? `
+      <div class="empty-state"><strong>Todavía no hay candidatos</strong>Ningún caballo tiene 1º, 2º o 3º puesto guardado en las clases ${clasesFeeder.join(', ')} — resuelve primero esas clasificaciones.</div>
+    ` : admin ? `
+      <div class="table-wrap">
+        <table class="resultados tabla-votos">
+          <thead><tr>
+            <th>Dorsal</th><th>Nombre</th><th>Juez I</th><th>Juez II</th><th>Total</th><th>Puesto</th>
+          </tr></thead>
+          <tbody>
+            ${candidatos.map((c, i) => `
+              <tr data-id="${c.id}">
+                <td class="dorsal-grande">${c.dorsal ?? '—'}</td>
+                <td class="nombre-cell">${escapeHtml(c.nombre)}<span class="detalle">${c.posicion}º clase ${c.clase_codigo}</span></td>
+                <td>${selectMedalla('juez1', c.juez1_medalla)}</td>
+                <td>${selectMedalla('juez2', c.juez2_medalla)}</td>
+                <td class="total-votos" data-total>${c.total}</td>
+                <td><input type="number" min="1" class="pos-input-clasif" value="${c.posicion_final ?? (i + 1)}"></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
       </div>
-      ${admin ? `<div style="margin-top:16px; display:flex; gap:12px; align-items:center;">
+      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 3, Bronce = 2 por juez). El puesto ya viene sugerido según el total — cámbialo si hace falta y pulsa "Guardar campeonato".</p>
+      <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-campeonato">Guardar campeonato</button>
         <span class="save-status" id="guardar-campeonato-status"></span>
-      </div>` : ''}
-    `}
-
-    ${admin && !candidatos.length ? `<p class="muted small" style="margin-top:16px;">Todavía no hay ningún caballo con 1º, 2º o 3º puesto en las clases ${clasesFeeder.join(', ')} — publica primero esas clasificaciones.</p>` : ''}
+      </div>
+    ` : (!camp.publicado ? `
+      <div class="empty-state"><strong>Campeonato aún no publicado</strong>La organización lo publicará en cuanto se decida.</div>
+    ` : `
+      <div class="caballos-clasif">
+        ${candidatos.map((c, i) => `
+          <div class="resumen-card">
+            <div class="resumen-row">
+              <span class="pos-num pos-num-public">${c.posicion_final != null ? ordinal(c.posicion_final) : (i + 1) + 'º'}</span>
+              <div class="resumen-info">
+                <strong class="caballo-nombre">${escapeHtml(c.nombre)}</strong>
+              </div>
+              <span class="dorsal-grande dorsal-grande-publico">Dorsal ${c.dorsal ?? '—'}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `)}
   `;
 
-  if (admin) wireCampeonatoAdmin(camp);
+  if (admin) wireCampeonatoAdmin(camp, candidatos);
 }
 
-function wireCampeonatoAdmin(camp) {
+function selectMedalla(juez, valor) {
+  return `
+    <select class="select-medalla" data-juez="${juez}">
+      <option value="" ${!valor ? 'selected' : ''}>—</option>
+      <option value="oro" ${valor === 'oro' ? 'selected' : ''}>🥇 Oro</option>
+      <option value="plata" ${valor === 'plata' ? 'selected' : ''}>🥈 Plata</option>
+      <option value="bronce" ${valor === 'bronce' ? 'selected' : ''}>🥉 Bronce</option>
+    </select>
+  `;
+}
+
+function wireCampeonatoAdmin(camp, candidatos) {
   const toggle = document.getElementById('publicar-campeonato-toggle');
   const status = document.getElementById('campeonato-status');
   toggle?.addEventListener('change', async () => {
@@ -1196,17 +1249,30 @@ function wireCampeonatoAdmin(camp) {
     }
   });
 
+  document.querySelectorAll('.select-medalla').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const row = sel.closest('tr');
+      const j1 = row.querySelector('[data-juez="juez1"]').value;
+      const j2 = row.querySelector('[data-juez="juez2"]').value;
+      row.querySelector('[data-total]').textContent = puntosMedalla(j1) + puntosMedalla(j2);
+    });
+  });
+
   const guardarBtn = document.getElementById('guardar-campeonato');
   const guardarStatus = document.getElementById('guardar-campeonato-status');
   guardarBtn?.addEventListener('click', async () => {
     guardarBtn.disabled = true;
     try {
-      const cambios = {};
-      document.querySelectorAll('.podio-select').forEach(sel => {
-        cambios[sel.dataset.key] = sel.value ? Number(sel.value) : null;
+      const filas = [];
+      document.querySelectorAll('.tabla-votos tbody tr').forEach(row => {
+        const caballo_id = Number(row.dataset.id);
+        const juez1_medalla = row.querySelector('[data-juez="juez1"]').value || null;
+        const juez2_medalla = row.querySelector('[data-juez="juez2"]').value || null;
+        const posInput = row.querySelector('.pos-input-clasif');
+        const posicion_final = posInput.value ? parseInt(posInput.value, 10) : null;
+        filas.push({ campeonato_id: camp.id, caballo_id, juez1_medalla, juez2_medalla, posicion_final });
       });
-      await guardarCampeonato(camp.id, cambios);
-      Object.assign(camp, cambios);
+      await guardarVotosCampeonato(filas);
       setSaveStatus(guardarStatus, 'Campeonato guardado ✓', false);
     } catch (err) {
       console.error(err);

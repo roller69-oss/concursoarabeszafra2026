@@ -241,6 +241,21 @@ h1,h2,h3{font-family:var(--f-display); margin:0; font-weight:600; letter-spacing
 .podio-caballo em{color:rgba(34,31,26,0.5); font-style:normal; font-weight:400;}
 .podio-select{width:100%; padding:9px 10px; border:1px solid var(--linea); border-radius:8px; font-size:0.9rem;}
 
+/* ------- Dorsal grande (para el speaker) ------- */
+.dorsal-grande{
+  font-family:var(--f-mono); font-weight:700; color:var(--verde-900);
+}
+td.dorsal-grande{font-size:1.4rem; text-align:center;}
+.dorsal-grande-publico{
+  display:inline-block; font-size:1.15rem; background:var(--verde-900); color:var(--marfil-alta);
+  padding:4px 12px; border-radius:999px; margin-top:2px;
+}
+
+/* ------- Tabla de votos de campeonato (solo admin) ------- */
+.tabla-votos td, .tabla-votos th{vertical-align:middle;}
+.select-medalla{padding:7px 8px; border:1px solid var(--linea); border-radius:8px; font-size:0.88rem; min-width:110px;}
+.total-votos{font-family:var(--f-mono); font-weight:700; font-size:1.1rem; color:var(--granate); text-align:center;}
+
 /* ------- Sorteo ------- */
 .sorteo-card{
   display:flex; align-items:center; gap:24px; flex-wrap:wrap;

@@ -168,3 +168,18 @@ end;
 $$;
 
 grant execute on function incrementar_visitas() to anon, authenticated;
+
+-- 9) Votos de campeonato: cada juez da Oro/Plata/Bronce a cada candidato
+create table if not exists campeonato_votos (
+  id serial primary key,
+  campeonato_id int references campeonatos(id) on delete cascade,
+  caballo_id int references caballos(id) on delete cascade,
+  juez1_medalla text,   -- 'oro' | 'plata' | 'bronce' | null
+  juez2_medalla text,
+  posicion_final int,
+  unique (campeonato_id, caballo_id)
+);
+alter table campeonato_votos enable row level security;
+create policy "lectura publica campeonato_votos" on campeonato_votos for select using (true);
+create policy "admin escribe campeonato_votos" on campeonato_votos
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
