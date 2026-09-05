@@ -1441,8 +1441,10 @@ async function renderCampeonato(codigo) {
       if (a.posicion_final != null && b.posicion_final != null) return a.posicion_final - b.posicion_final;
       if (a.posicion_final != null) return -1;
       if (b.posicion_final != null) return 1;
-      const diff = b.total - a.total;
-      return diff !== 0 ? diff : desempatePorCriterio(a, b);
+      const diffMedallas = b.total - a.total;
+      if (diffMedallas !== 0) return diffMedallas;
+      const diffPuntuacion = totalFinal(b) - totalFinal(a);
+      return diffPuntuacion !== 0 ? diffPuntuacion : desempatePorCriterio(a, b);
     });
 
   app.innerHTML = `
@@ -1468,7 +1470,7 @@ async function renderCampeonato(codigo) {
       <div class="empty-state"><strong>Todavía no hay candidatos</strong>Ningún caballo tiene 1º, 2º o 3º puesto guardado en las clases ${clasesFeeder.join(', ')} — resuelve primero esas clasificaciones.</div>
     ` : admin ? `
       <div id="tabla-votos-wrap">${tablaVotos(candidatos)}</div>
-      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). En caso de empate, gana quien tenga más en Tipo (T) en su clase, y si sigue igual, en Movimiento (M). El orden se actualiza al momento ("auto: Nº"); escribe un número solo si quieres fijar el puesto de alguno a mano.</p>
+      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). En caso de empate, gana quien tenga mayor puntuación total en su clase; si sigue empatado, quien tenga más en Tipo (T); y si aún así sigue igual, quien tenga más en Movimiento (M). El orden se actualiza al momento ("auto: Nº"); escribe un número solo si quieres fijar el puesto de alguno a mano.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-campeonato">Guardar campeonato</button>
         <span class="save-status" id="guardar-campeonato-status"></span>
@@ -1489,8 +1491,10 @@ function ordenarCandidatos(lista) {
     if (a.posicion_final != null && b.posicion_final != null) return a.posicion_final - b.posicion_final;
     if (a.posicion_final != null) return -1;
     if (b.posicion_final != null) return 1;
-    const diff = b.total - a.total;
-    return diff !== 0 ? diff : desempatePorCriterio(a, b);
+    const diffMedallas = b.total - a.total;
+    if (diffMedallas !== 0) return diffMedallas;
+    const diffPuntuacion = totalFinal(b) - totalFinal(a);
+    return diffPuntuacion !== 0 ? diffPuntuacion : desempatePorCriterio(a, b);
   });
 }
 
