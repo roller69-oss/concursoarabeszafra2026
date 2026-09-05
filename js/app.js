@@ -508,21 +508,44 @@ function candidatosMejorPuntuacion(caballos) {
   return { max, candidatos };
 }
 
-function trofeoGridMejorPuntuacion(t, caballos) {
-  const { max, candidatos } = candidatosMejorPuntuacion(caballos);
+function candidatosMejorCriterio(caballos, criterio) {
+  const puntuados = caballos.filter(h => totalFinal(h) != null);
+  if (!puntuados.length) return { max: null, candidatos: [] };
+  const max = Math.max(...puntuados.map(h => sumaCriterioAmbosJueces(h, criterio)));
+  const candidatos = puntuados
+    .filter(h => sumaCriterioAmbosJueces(h, criterio) === max)
+    .sort((a, b) => totalFinal(b) - totalFinal(a)); // desempate visual: mayor puntuación total primero
+  return { max, candidatos };
+}
+
+const TROFEO_AUTO_CONFIG = {
+  'mejor-puntuacion': {
+    etiquetaMax: 'Máxima puntuación del concurso',
+    obtenerCandidatos: candidatosMejorPuntuacion,
+    mostrarValor: h => `${fmtNum(totalFinal(h))} pts`,
+  },
+  'mejor-movimiento': {
+    etiquetaMax: 'Máxima puntuación en Movimiento (M)',
+    obtenerCandidatos: (caballos) => candidatosMejorCriterio(caballos, 'm'),
+    mostrarValor: h => `M: ${fmtNum(sumaCriterioAmbosJueces(h, 'm'))} · Total: ${fmtNum(totalFinal(h))} pts`,
+  },
+};
+
+function trofeoGridPorCriterio(t, caballos, config) {
+  const { max, candidatos } = config.obtenerCandidatos(caballos);
   if (max == null) return `<p class="muted small">Todavía no hay ningún caballo puntuado.</p>`;
 
   const seleccionado = candidatos.find(c => String(c.id) === String(t.ganador_caballo_id));
   return `
     <div class="trofeo-mp-wrap">
-      <p class="muted small">Máxima puntuación del concurso: <strong>${fmtNum(max)} pts</strong>${candidatos.length > 1 ? ` — ${candidatos.length} caballos empatados` : ''}.</p>
+      <p class="muted small">${config.etiquetaMax}: <strong>${fmtNum(max)}</strong>${candidatos.length > 1 ? ` — ${candidatos.length} caballos empatados, desempatados aquí por mayor puntuación total` : ''}.</p>
       <div class="trofeo-mp-grid">
         ${candidatos.map(h => `
           <div class="trofeo-mp-card ${String(t.ganador_caballo_id) === String(h.id) ? 'seleccionado' : ''}" data-id="${h.id}" data-dorsal="${h.dorsal ?? ''}">
             <span class="dorsal-grande">${h.dorsal ?? '—'}</span>
             <strong>${escapeHtml(h.nombre)}</strong>
             <span class="muted small">${escapeHtml(h.clase_titulo || '')}</span>
-            <span class="total-votos">${fmtNum(totalFinal(h))} pts</span>
+            <span class="total-votos">${config.mostrarValor(h)}</span>
             <button type="button" class="btn-ghost btn-ver-notas" data-toggle="mp-${h.id}">Ver notas</button>
           </div>
         `).join('')}
@@ -561,8 +584,8 @@ async function renderTrofeos(trofeos) {
           ${admin ? (
             t.tipo === 'texto'
               ? `<input type="text" class="trofeo-input-texto" placeholder="Nombre del presentador" value="${escapeHtml(t.ganador_texto || '')}">`
-              : t.codigo === 'mejor-puntuacion'
-                ? trofeoGridMejorPuntuacion(t, caballos)
+              : TROFEO_AUTO_CONFIG[t.codigo]
+                ? trofeoGridPorCriterio(t, caballos, TROFEO_AUTO_CONFIG[t.codigo])
                 : `<select class="trofeo-select">
                    <option value="">— Sin adjudicar —</option>
                    ${agruparPorClase(caballos).map(grupo => `
