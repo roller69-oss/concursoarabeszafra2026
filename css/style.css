@@ -403,10 +403,12 @@ table.resultados tbody tr:hover{background:rgba(192,136,41,0.06);}
 }
 .resumen-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
 .resumen-row .pos-block{min-width:auto;}
+.pos-editor-wrap{display:inline-flex; flex-direction:column; align-items:center; gap:2px;}
 .pos-input-clasif{
   width:52px; font-family:var(--f-mono); text-align:center; padding:8px 4px; font-size:0.95rem;
   border:1px solid var(--linea); border-radius:8px;
 }
+.pos-auto-hint{font-family:var(--f-mono); font-size:0.68rem; color:rgba(34,31,26,0.45); white-space:nowrap;}
 .resumen-info{display:flex; flex-direction:column; gap:1px; flex:1; min-width:140px;}
 .resumen-total{
   font-family:var(--f-mono); font-weight:700; font-size:1.1rem; color:var(--granate);

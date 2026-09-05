@@ -1103,7 +1103,7 @@ function tablaClasificacion(caballos, clase, admin) {
           <div class="resumen-row">
             <div class="pos-block">
               ${admin
-                ? `<input type="number" min="1" class="pos-input-clasif" value="${h.posicion ?? (i + 1)}">`
+                ? `<span class="pos-editor-wrap"><input type="number" min="1" class="pos-input-clasif" value="${h.posicion ?? ''}" placeholder="auto"><span class="pos-auto-hint">auto: ${i + 1}º</span></span>`
                 : `<span class="pos-num pos-num-public">${h.posicion != null ? ordinal(h.posicion) : (i + 1) + 'º'}</span>`}
             </div>
             <div class="resumen-info">
@@ -1118,7 +1118,7 @@ function tablaClasificacion(caballos, clase, admin) {
       `).join('')}
     </div>
     ${admin ? `
-      <p class="muted small">Cada casilla ya trae un puesto sugerido según la puntuación — cámbialo si no es el orden final que quieres, y pulsa "Guardar cambios" para que quede guardado de verdad.</p>
+      <p class="muted small">Mientras no escribas nada en la casilla, el orden se actualiza solo según la puntuación (verás "auto: Nº" como referencia). Si quieres fijar el puesto de un caballo a mano, escribe el número y pulsa "Guardar cambios" — el resto seguirá ordenándose solo.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-clasificacion">Guardar cambios</button>
         <span class="save-status" id="guardar-status"></span>
@@ -1192,13 +1192,13 @@ async function renderCampeonato(codigo) {
                 <td>${selectMedalla('juez1', c.juez1_medalla)}</td>
                 <td>${selectMedalla('juez2', c.juez2_medalla)}</td>
                 <td class="total-votos" data-total>${c.total}</td>
-                <td><input type="number" min="1" class="pos-input-clasif" value="${c.posicion_final ?? (i + 1)}"></td>
+                <td><span class="pos-editor-wrap"><input type="number" min="1" class="pos-input-clasif" value="${c.posicion_final ?? ''}" placeholder="auto"><span class="pos-auto-hint">auto: ${i + 1}º</span></span></td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       </div>
-      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). El puesto ya viene sugerido según el total — cámbialo si hace falta y pulsa "Guardar campeonato".</p>
+      <p class="muted small">El total se calcula solo (Oro = 4, Plata = 2, Bronce = 1 por juez). Mientras no escribas un puesto, el orden se actualiza solo según el total ("auto: Nº"); escribe un número solo si quieres fijarlo a mano.</p>
       <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" id="guardar-campeonato">Guardar campeonato</button>
         <span class="save-status" id="guardar-campeonato-status"></span>
