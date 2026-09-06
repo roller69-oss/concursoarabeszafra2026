@@ -17,6 +17,7 @@ create table if not exists evento (
   juez1_general text,
   juez2_general text,
   directo_url text,
+  aviso_resultados text not null default 'Esta web tiene carácter exclusivamente informativo y se limita a mostrar las puntuaciones y resultados otorgados por los jueces conforme a la normativa del concurso. Durante el desarrollo de las pruebas, la información mostrada puede actualizarse hasta la publicación de los resultados definitivos.',
   constraint evento_single_row check (id = 1)
 );
 insert into evento (id) values (1) on conflict (id) do nothing;

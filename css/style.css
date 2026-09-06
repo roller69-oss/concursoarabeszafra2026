@@ -151,6 +151,13 @@ h1,h2,h3{font-family:var(--f-display); margin:0; font-weight:600; letter-spacing
 }
 .hero-cartel img{display:block; width:100%; height:auto;}
 
+.aviso-resultados{
+  background:var(--marfil-alta); border:1px solid var(--oro); border-left-width:4px;
+  border-radius:12px; padding:16px 20px; margin:20px 0; max-width:760px; margin-left:auto; margin-right:auto;
+}
+.aviso-resultados strong{display:block; color:var(--verde-900); font-family:var(--f-display); font-size:1.02rem; margin-bottom:6px;}
+.aviso-resultados p{margin:0; font-size:0.88rem; line-height:1.55; color:rgba(34,31,26,0.75);}
+
 /* logos: organiza / colabora / patrocina */
 .logo-band{
   padding:34px 0; border-bottom:1px solid var(--linea);

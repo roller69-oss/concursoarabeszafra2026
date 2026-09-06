@@ -111,7 +111,8 @@ async function fetchEvento() {
       colaboradores: [],
       juez1_general: null,
       juez2_general: null,
-      directo_url: null
+      directo_url: null,
+      aviso_resultados: 'Esta web tiene carácter exclusivamente informativo y se limita a mostrar las puntuaciones y resultados otorgados por los jueces conforme a la normativa del concurso. Durante el desarrollo de las pruebas, la información mostrada puede actualizarse hasta la publicación de los resultados definitivos.'
     };
   }
   const { data, error } = await supa.from('evento').select('*').eq('id', 1).single();
@@ -406,6 +407,12 @@ async function renderHome() {
       <h1 class="sr-only">${escapeHtml(evento.titulo)}</h1>
       ${cartel}
     </section>
+
+    ${evento.aviso_resultados ? `
+    <div class="aviso-resultados">
+      <strong>Información sobre los resultados</strong>
+      <p>${escapeHtml(evento.aviso_resultados)}</p>
+    </div>` : ''}
 
     <div class="section-title" id="anuncios">
       <h2>Tablón de anuncios</h2>
@@ -896,6 +903,7 @@ function renderAdminEventoPanel(evento) {
       <div class="field"><label>Descripción</label><textarea id="ev-descripcion">${escapeHtml(evento.descripcion || '')}</textarea></div>
       <div class="field"><label>URL del cartel</label><input id="ev-cartel" placeholder="https://…" value="${escapeHtml(evento.cartel_url || '')}"></div>
       <div class="field"><label>URL para ver en directo (YouTube) — déjalo vacío hasta que empiece la emisión</label><input id="ev-directo" placeholder="https://youtube.com/…" value="${escapeHtml(evento.directo_url || '')}"></div>
+      <div class="field"><label>Aviso sobre los resultados (debajo de la cabecera)</label><textarea id="ev-aviso">${escapeHtml(evento.aviso_resultados || '')}</textarea></div>
       <div class="field"><label>Organiza / colabora — una línea por logo: Nombre|URL de imagen</label><textarea id="ev-colaboradores">${escapeHtml(colabText)}</textarea></div>
       <div class="field"><label>Patrocinadores — una línea por logo: Nombre|URL de imagen</label><textarea id="ev-patrocinadores">${escapeHtml(patroText)}</textarea></div>
       <div class="field"><label>Juez I general (se muestra al final de Campeonatos y Trofeos)</label><input id="ev-juez1" placeholder="D. Nombre Apellido" value="${escapeHtml(evento.juez1_general || '')}"></div>
@@ -930,6 +938,7 @@ function wireAdminEventoPanel() {
         descripcion: document.getElementById('ev-descripcion').value.trim(),
         cartel_url: document.getElementById('ev-cartel').value.trim(),
         directo_url: document.getElementById('ev-directo').value.trim() || null,
+        aviso_resultados: document.getElementById('ev-aviso').value.trim() || null,
         colaboradores: parseLogoLines(document.getElementById('ev-colaboradores').value),
         patrocinadores: parseLogoLines(document.getElementById('ev-patrocinadores').value),
         juez1_general: document.getElementById('ev-juez1').value.trim() || null,
